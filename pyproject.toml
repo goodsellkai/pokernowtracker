@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pokernow-tracker"
+version = "1.0.0"
+description = "Track PokerNow opponents and estimate their preflop ranges"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [{ name = "Kai Goodsell" }]
+keywords = ["poker", "pokernow", "hud", "statistics", "ranges"]
+classifiers = [
+  "Environment :: Console",
+  "Intended Audience :: End Users/Desktop",
+  "Programming Language :: Python :: 3",
+  "Topic :: Games/Entertainment",
+]
+dependencies = []
+
+[project.scripts]
+pokernow = "pokernow_tracker.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/goodsellkai/pokernowtracker"
+
+[tool.setuptools.packages.find]
+include = ["pokernow_tracker*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
