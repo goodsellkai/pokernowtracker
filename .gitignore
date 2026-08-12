@@ -1,5 +1,6 @@
 # PokerNow exports contain the display names of everyone at the table
 *.csv
+!docs/*.csv
 
 # Python
 __pycache__/

@@ -2,39 +2,18 @@
 
 A command line tracker and range analyser for [PokerNow](https://www.pokernow.club/) games. It reads the hand-history exports PokerNow already produces and turns them into per-player statistics, positional splits, results, and probabilistic preflop range estimates.
 
-```
-$ pokernow range Robin --action open --position BTN
+![The Range Finder](docs/range-finder.png)
 
-Robin, raise from BTN
-      A    K    Q    J    T    9    8    7    6    5    4    3    2
- A  100 .100 .100  100 .100  100  100 . 99   98 . 99   98   96   92
- K  100  100  100 .100 .100 . 99   95   92   78   80 . 65   50   42
- Q  100 .100  100 .100  100   99   91   68   49   40   31   18   13
- J  100   98   98 .100 .100   99 . 87   59   35   19   15   10   7
- T  100 . 89   83   94  100   99   93   76   36   10   7    5    3
- 9   91 . 19   8    24   52  100 . 93   77   56   30   8    5    3
- 8   60   10   4    4    27   12  100   86   66   37   16   4    2
- 7   44   6    2    2    2    3    7   100   71   48   16   5    1
- 6   22   3    1    1    1    1    1    3    99 . 58   38   17   4
- 5   32   2    1    1    0    0    1    1    2    96   41   18   6
- 4   14   2    1    0    0    0    0    0    1    1    91 . 13   6
- 3   9    1    0    0    0    0    0    0    0    1    0    74   3
- 2   5    1    0    0    0    0    0    0    0    0    0    0    69
-
-  Robin opens about 31.4% of hands when first in. From BTN: 22% over 27 spots,
-  blended with 29% overall and a positional prior. Range covers about 32% of all
-  hands. 19 hands adjusted by observation, marked with a dot.
-```
-
-Each cell is the estimated chance that hand is in the range. A dot marks a hand
-whose estimate was adjusted by cards actually seen. In a colour terminal the grid
-is shaded instead of numbered.
+A desktop application with a command line alongside it. Pick a player, a seat, and a
+preflop action, and every starting hand is shaded by how likely it is to be in their
+range. A dot marks a hand whose estimate was adjusted by cards you have actually seen.
 
 ## Contents
 
 - [Installation](#installation)
 - [Quick start](#quick-start)
-- [Commands](#commands)
+- [The desktop application](#the-desktop-application)
+- [Command line](#command-line)
 - [Statistics](#statistics)
 - [Range estimates](#range-estimates)
 - [How the range model works](#how-the-range-model-works)
@@ -49,16 +28,14 @@ Requires Python 3.9 or newer.
 ```bash
 git clone https://github.com/goodsellkai/pokernowtracker.git
 cd pokernowtracker
-pip install .
+pip install ".[gui]"
 ```
 
-That installs a `pokernow` command. To work on the code instead, use `pip install -e .`.
+That installs two commands: `pokernow-gui` for the desktop application and `pokernow`
+for the command line. The analysis engine itself has no dependencies, so if you only
+want the command line, plain `pip install .` skips the interface toolkit entirely.
 
-You can also run it without installing anything:
-
-```bash
-python -m pokernow_tracker --help
-```
+To work on the code, use `pip install -e ".[gui]"`.
 
 ## Quick start
 
@@ -73,7 +50,33 @@ pokernow range Robin --action open --position BTN
 
 Statistics accumulate across every log you import. Players are matched by their PokerNow account id, so a changed nickname carries over, and players whose names differ only in case or spacing are merged automatically. Re-importing a log you have already processed is safe, because hands are deduplicated by hand id. Importing a longer export of a game you already have replaces the shorter one.
 
-## Commands
+## The desktop application
+
+Four tabs, and a player window behind every name.
+
+**Import** takes hand histories by drag and drop, or through a file picker, and reports
+what each file added.
+
+**Players** shows a card per opponent with their headline numbers. Statistics that sit
+well away from the table average carry an arrow, so the reads are relative to the game
+you actually play in rather than to a generic population.
+
+![Players](docs/players.png)
+
+**Range Finder** is the screenshot at the top of this page. Four views are available:
+weighted probabilities for one action, a best guess mixing observation with inference,
+pure statistical tiers with sliders, and observations only.
+
+**Data** shows where everything is stored, what is archived, and offers a rebuild, a
+JSON backup, and a reset.
+
+Selecting a player opens a window with their full statistics, positional splits, and
+session history beside their range, along with notes, a tag, and merge and delete
+controls.
+
+![A player](docs/player.png)
+
+## Command line
 
 | Command | Purpose |
 | --- | --- |
@@ -87,6 +90,7 @@ Statistics accumulate across every log you import. Players are matched by their 
 | `pokernow data` | Show where data lives and what is archived |
 | `pokernow merge <a> <b>` | Combine two player records |
 | `pokernow note <name> <text>` | Attach a note or `--tag` to a player |
+| `pokernow-gui` | Launch the desktop application |
 
 Add `--no-color` for plain output, or set `NO_COLOR` in the environment. Grids fall back to short action codes when colour is unavailable, so piping to a file stays readable.
 
@@ -163,11 +167,16 @@ Hand-history exports contain the display names of everyone at the table. The inc
 ## Development
 
 ```bash
-pip install -e . pytest
+pip install -e ".[gui]" pytest
 pytest
 ```
 
-The test suite builds synthetic hand histories rather than depending on real ones, and covers the parser, the money reconciliation, opportunity counting, and the range model's invariants, including that each decision's options sum to exactly 100% and that every action's range mass matches the measured frequency.
+The test suite builds synthetic hand histories rather than depending on real ones, and
+covers the parser, the money reconciliation, opportunity counting, the range model's
+invariants (including that each decision's options sum to exactly 100% and that every
+action's range mass matches the measured frequency), and the interface, which is
+rendered offscreen so it can be checked on a build server. Interface tests are skipped
+automatically when the toolkit is not installed.
 
 Module layout:
 
@@ -181,6 +190,10 @@ Module layout:
 | `store.py` | Persistence and the log archive |
 | `render.py` | Terminal output |
 | `cli.py` | Command line interface |
+| `ui/` | Desktop interface |
+
+The analysis engine knows nothing about either interface, so the same results back the
+window and the terminal.
 
 ## License
 
