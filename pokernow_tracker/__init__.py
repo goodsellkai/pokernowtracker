@@ -1,4 +1,4 @@
-"""Track PokerNow opponents and estimate their preflop ranges."""
+"""Desktop tracker and preflop range analyser for PokerNow games."""
 
 __version__ = "1.0.0"
 

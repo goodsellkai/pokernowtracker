@@ -1,6 +1,8 @@
+"""Launch the application with ``python -m pokernow_tracker``."""
+
 import sys
 
-from .cli import main
+from .ui import run
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(run())

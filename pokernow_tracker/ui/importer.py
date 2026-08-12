@@ -7,15 +7,15 @@ from typing import List, Optional
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
-    QFileDialog, QHeaderView, QLabel, QTableWidget, QTableWidgetItem,
-    QVBoxLayout, QWidget,
+    QFileDialog, QHeaderView, QLabel, QSizePolicy, QTableWidget,
+    QTableWidgetItem, QVBoxLayout, QWidget,
 )
 
 from ..ingest import import_file
 from ..stats import ratio
 from ..store import Store
 from . import theme
-from .widgets import Card, dim, format_money, hint
+from .widgets import Panel, faint, format_money, muted, notice
 
 
 class DropZone(QLabel):
@@ -25,12 +25,15 @@ class DropZone(QLabel):
 
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
-        self.setObjectName("DropZone")
+        self.setObjectName("DropTarget")
         self.setAlignment(Qt.AlignCenter)
-        self.setMinimumHeight(130)
+        self.setMinimumHeight(150)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setCursor(Qt.PointingHandCursor)
         self.setAcceptDrops(True)
-        self.setText("Drop hand history CSV files here, or click to browse")
+        self.setText(
+            "Drop hand history exports here\n\nor click to browse for them"
+        )
         self.setProperty("active", "false")
 
     def _set_active(self, active: bool) -> None:
@@ -75,21 +78,23 @@ class ImportTab(QWidget):
         self._store = store
 
         column = QVBoxLayout(self)
-        column.setContentsMargins(16, 14, 16, 14)
+        column.setContentsMargins(18, 16, 18, 16)
         column.setSpacing(12)
 
-        column.addWidget(hint(
+        column.addWidget(notice(
             "In PokerNow, open the game's Log panel and download the hand history CSV, then"
             " drop it here. Statistics accumulate across every log you import. Re-importing"
             " a log you already have is safe, because hands are matched by their id."
         ))
 
-        card = Card("Import hand histories")
+        card = Panel("Import hand histories")
         zone = DropZone()
         zone.files_dropped.connect(self._import)
-        card.add(zone)
+        # The drop target takes the spare room; everything else stays put.
+        card.body().addWidget(zone, 1)
 
-        self._summary = dim("")
+        self._summary = muted("")
+        self._summary.hide()
         card.add(self._summary)
 
         self._results = QTableWidget(0, 5)
@@ -101,10 +106,10 @@ class ImportTab(QWidget):
         self._results.setAlternatingRowColors(True)
         self._results.setShowGrid(False)
         self._results.hide()
+        self._results.setMaximumHeight(320)
         card.add(self._results)
 
-        column.addWidget(card)
-        column.addStretch(1)
+        column.addWidget(card, 1)
 
     def _import(self, paths: List[Path]) -> None:
         from PySide6.QtGui import QColor

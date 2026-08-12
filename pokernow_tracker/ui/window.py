@@ -66,21 +66,29 @@ class MainWindow(QMainWindow):
         header = QWidget()
         header.setObjectName("Header")
         row = QHBoxLayout(header)
-        row.setContentsMargins(18, 0, 14, 0)
-        row.setSpacing(14)
+        row.setContentsMargins(16, 0, 12, 0)
+        row.setSpacing(9)
 
-        title = QLabel("<span style='color:%s'>&#9824;</span>  POKERNOW "
-                       "<span style='color:%s'>TRACKER</span>" % (theme.ACCENT, theme.DIM))
-        title.setObjectName("HeaderTitle")
-        title.setTextFormat(Qt.RichText)
+        suit = QLabel("♠")
+        suit.setObjectName("WordmarkSuit")
+        row.addWidget(suit)
+
+        title = QLabel("PokerNow Tracker")
+        title.setObjectName("Wordmark")
         row.addWidget(title)
+
         row.addStretch(1)
 
-        reload_button = QPushButton("↻  Reload")
+        self._meta = QLabel("")
+        self._meta.setObjectName("HeaderMeta")
+        row.addWidget(self._meta)
+
+        reload_button = QPushButton("Reload")
+        reload_button.setObjectName("Quiet")
         reload_button.setToolTip("Re-read saved data from disk and redraw")
         reload_button.clicked.connect(self._reload_from_disk)
         row.addWidget(reload_button)
-        header.setFixedHeight(46)
+        header.setFixedHeight(42)
         return header
 
     # --------------------------------------------------------------- events
@@ -103,6 +111,13 @@ class MainWindow(QMainWindow):
         self._players.reload()
         self._finder.reload()
         self._data.reload()
+
+        players = len(self._store.players)
+        hands = max((int(p.counters["hands"]) for p in self._store.players.values()), default=0)
+        self._meta.setText(
+            f"{players} players · {len(self._store.sessions)} sessions · {hands} hands"
+            if players else ""
+        )
 
     def _refresh_current(self) -> None:
         current = self._tabs.currentWidget()
@@ -128,6 +143,6 @@ class MainWindow(QMainWindow):
         self._finder.show_player(player, action, position)
 
     def open_files(self, paths: List[Path]) -> None:
-        """Import files passed on the command line."""
+        """Import files handed to the application at startup."""
         self._tabs.setCurrentWidget(self._import)
         self._import._import(paths)

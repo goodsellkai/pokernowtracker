@@ -17,10 +17,10 @@ from .window import MainWindow
 
 def run(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
-        prog="pokernow-gui",
+        prog="pokernow",
         description="Track PokerNow opponents and estimate their preflop ranges.",
     )
-    parser.add_argument("files", nargs="*", help="hand history exports to import at startup")
+    parser.add_argument("files", nargs="*", help="hand history exports to open at startup")
     parser.add_argument("--data-dir", help="where to keep tracked data")
     args = parser.parse_args(list(argv) if argv is not None else None)
 

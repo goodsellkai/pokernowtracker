@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
 
 from ..ingest import rebuild
 from ..store import Store
-from .widgets import Card, dim, hint
+from .widgets import Panel, Rule, faint, muted, notice
 
 
 class DataTab(QWidget):
@@ -30,10 +30,10 @@ class DataTab(QWidget):
         column.setContentsMargins(16, 14, 16, 14)
         column.setSpacing(12)
 
-        storage = Card("Storage")
-        self._location = dim("")
+        storage = Panel("Storage")
+        self._location = muted("")
         storage.add(self._location)
-        self._counts = dim("")
+        self._counts = muted("")
         storage.add(self._counts)
 
         buttons = QHBoxLayout()
@@ -44,19 +44,19 @@ class DataTab(QWidget):
         buttons.addWidget(export)
         buttons.addStretch(1)
         reset = QPushButton("Reset everything")
-        reset.setObjectName("Danger")
+        reset.setObjectName("Destructive")
         reset.clicked.connect(self._reset)
         buttons.addWidget(reset)
         storage.add_layout(buttons)
         column.addWidget(storage)
 
-        archive = Card("Log archive")
-        archive.add(dim(
+        archive = Panel("Log archive")
+        archive.add(muted(
             "Imported logs are kept so every statistic can be regenerated whenever the"
             " analysis changes. The same file is never imported twice, and only the"
             " fullest export of each game is stored."
         ))
-        self._archive_summary = dim("")
+        self._archive_summary = muted("")
         archive.add(self._archive_summary)
 
         archive_buttons = QHBoxLayout()
@@ -66,13 +66,13 @@ class DataTab(QWidget):
         archive_buttons.addWidget(rebuild_button)
         archive_buttons.addStretch(1)
         clear = QPushButton("Clear archive")
-        clear.setObjectName("Danger")
+        clear.setObjectName("Destructive")
         clear.clicked.connect(self._clear)
         archive_buttons.addWidget(clear)
         archive.add_layout(archive_buttons)
         column.addWidget(archive)
 
-        sessions = Card("Imported sessions")
+        sessions = Panel("Imported sessions")
         self._sessions = QTableWidget(0, 4)
         self._sessions.setHorizontalHeaderLabels(["Date", "Hands", "Stakes", "Source"])
         self._sessions.verticalHeader().setVisible(False)

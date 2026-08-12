@@ -1,79 +1,93 @@
-"""Colours, fonts, and the application stylesheet."""
+"""Colours, typography, and the application stylesheet.
+
+The palette is built from felt-tinted neutrals with a muted brass accent, so
+the saturated action colours in the hand grid stay the loudest thing on screen.
+"""
 
 from __future__ import annotations
 
 from PySide6.QtGui import QColor
 
-BACKGROUND = "#141416"
-PANEL = "#1c1d20"
-PANEL_RAISED = "#242528"
-LINE = "#303136"
-TEXT = "#e7e5e0"
-DIM = "#96948e"
-ACCENT = "#d9a23c"
-ACCENT_INK = "#1c1503"
-POSITIVE = "#58b97e"
-NEGATIVE = "#e05c4b"
-INFO = "#4aa3e0"
+# Neutrals carry a faint green cast rather than being pure grey, which keeps
+# the card-room feel without tinting the data.
+BACKGROUND = "#141715"
+SURFACE = "#1a1e1b"
+SURFACE_HIGH = "#212724"
+LINE = "#2c332e"
+LINE_SOFT = "#242a26"
+
+TEXT = "#e2e0d7"
+TEXT_MUTED = "#8d948c"
+TEXT_FAINT = "#646b65"
+
+ACCENT = "#a8862f"
+ACCENT_HOVER = "#c09a38"
+ACCENT_INK = "#12100a"
+
+POSITIVE = "#5f9c6d"
+NEGATIVE = "#bd5a4d"
+INFO = "#5b86a3"
+CAUTION = "#b5893c"
 
 #: Colours per observed action, from most to least committed.
 ACTION_COLOUR = {
-    "q5": QColor(244, 63, 142),
-    "q": QColor(214, 59, 168),
-    "t": QColor(168, 85, 247),
-    "o": QColor(224, 92, 75),
-    "c": QColor(230, 184, 74),
-    "c3": QColor(230, 184, 74),
-    "c4": QColor(230, 184, 74),
-    "l": QColor(230, 184, 74),
-    "x": QColor(46, 95, 134),
-    "f": QColor(88, 94, 104),
-    "fv": QColor(88, 94, 104),
-    "f3": QColor(88, 94, 104),
-    "f4": QColor(88, 94, 104),
+    "q5": QColor(206, 76, 132),
+    "q": QColor(178, 74, 150),
+    "t": QColor(139, 92, 196),
+    "o": QColor(196, 88, 74),
+    "c": QColor(190, 152, 66),
+    "c3": QColor(190, 152, 66),
+    "c4": QColor(190, 152, 66),
+    "l": QColor(190, 152, 66),
+    "x": QColor(70, 106, 132),
+    "f": QColor(74, 82, 78),
+    "fv": QColor(74, 82, 78),
+    "f3": QColor(74, 82, 78),
+    "f4": QColor(74, 82, 78),
 }
 
 TIER_COLOUR = {
-    "3bet": QColor(168, 85, 247),
-    "open": QColor(224, 92, 75),
-    "call": QColor(230, 184, 74),
-    "fold": QColor(40, 42, 46),
+    "3bet": QColor(139, 92, 196),
+    "open": QColor(196, 88, 74),
+    "call": QColor(190, 152, 66),
+    "fold": QColor(38, 44, 40),
 }
 
-#: Hue used for the weighted view, per action being asked about.
+#: Hue used for the weighted view, depending on the action being asked about.
 ACTION_HUE = {
-    "open": QColor(224, 92, 75),
-    "iso": QColor(224, 92, 75),
-    "limp": QColor(230, 184, 74),
-    "call": QColor(230, 184, 74),
-    "call-3bet": QColor(230, 184, 74),
-    "call-4bet": QColor(230, 184, 74),
-    "3bet": QColor(168, 85, 247),
-    "4bet": QColor(214, 59, 168),
-    "5bet": QColor(244, 63, 142),
-    "check": QColor(74, 163, 224),
-    "fold": QColor(110, 130, 150),
-    "fold-vs-raise": QColor(110, 130, 150),
-    "fold-vs-3bet": QColor(110, 130, 150),
-    "fold-vs-4bet": QColor(110, 130, 150),
+    "open": QColor(196, 88, 74),
+    "iso": QColor(196, 88, 74),
+    "limp": QColor(190, 152, 66),
+    "call": QColor(190, 152, 66),
+    "call-3bet": QColor(190, 152, 66),
+    "call-4bet": QColor(190, 152, 66),
+    "3bet": QColor(139, 92, 196),
+    "4bet": QColor(178, 74, 150),
+    "5bet": QColor(206, 76, 132),
+    "check": QColor(70, 106, 132),
+    "fold": QColor(96, 112, 104),
+    "fold-vs-raise": QColor(96, 112, 104),
+    "fold-vs-3bet": QColor(96, 112, 104),
+    "fold-vs-4bet": QColor(96, 112, 104),
 }
 
-EMPTY_CELL = QColor(35, 36, 39)
+EMPTY_CELL = QColor(31, 36, 33)
+GRID_BACKGROUND = QColor(20, 23, 21)
 
-STYLE_BADGE = {
-    "Nit": "#3b5b8a",
-    "Rock": "#3b5b8a",
-    "TAG": "#2a9d65",
-    "LAG": "#b3622e",
-    "Loose-passive": "#8a3bb0",
-    "Calling station": "#8a3bb0",
-    "Whale": "#8a3bb0",
-    "Maniac": "#c0392b",
-    "Low sample": "#566573",
+STYLE_COLOUR = {
+    "Nit": "#4a6d8c",
+    "Rock": "#4a6d8c",
+    "TAG": "#4f8a63",
+    "LAG": "#a2703a",
+    "Loose-passive": "#7c5a99",
+    "Calling station": "#7c5a99",
+    "Whale": "#7c5a99",
+    "Maniac": "#b1544a",
+    "Low sample": "#5c635e",
 }
 
 
-def blend(colour: QColor, weight: float, base: QColor = QColor(28, 29, 32)) -> QColor:
+def blend(colour: QColor, weight: float, base: QColor = QColor(26, 30, 27)) -> QColor:
     """Mix a colour toward the panel background."""
     weight = max(0.0, min(1.0, weight))
     return QColor(
@@ -86,126 +100,142 @@ def blend(colour: QColor, weight: float, base: QColor = QColor(28, 29, 32)) -> Q
 def readable_on(colour: QColor) -> QColor:
     """Black or white text, whichever reads better on a background."""
     luminance = 0.299 * colour.red() + 0.587 * colour.green() + 0.114 * colour.blue()
-    return QColor(20, 20, 20) if luminance > 150 else QColor(240, 240, 240)
+    return QColor(18, 20, 18) if luminance > 148 else QColor(238, 238, 234)
 
 
 STYLESHEET = f"""
 QWidget {{
     background: {BACKGROUND};
     color: {TEXT};
-    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
     font-size: 13px;
 }}
 QMainWindow, QDialog {{ background: {BACKGROUND}; }}
 QLabel, QCheckBox, QRadioButton {{ background: transparent; }}
 
-#Header {{ background: #101012; border-bottom: 1px solid {LINE}; }}
-#HeaderTitle {{
-    font-size: 14px; font-weight: 800; letter-spacing: 2px; color: {TEXT};
-}}
-#HeaderTitle #Suit {{ color: {ACCENT}; }}
+/* Title bar ------------------------------------------------------------- */
+#Header {{ background: {SURFACE}; border-bottom: 1px solid {LINE}; }}
+#Wordmark {{ font-size: 14px; font-weight: 600; color: {TEXT}; }}
+#WordmarkSuit {{ font-size: 15px; color: {ACCENT}; }}
+#HeaderMeta {{ color: {TEXT_FAINT}; font-size: 12px; }}
 
+/* Navigation ------------------------------------------------------------ */
 QTabWidget::pane {{ border: none; background: {BACKGROUND}; }}
-QTabBar {{ background: #101012; }}
+QTabBar {{ background: {SURFACE}; }}
 QTabBar::tab {{
-    background: transparent; color: {DIM};
-    padding: 12px 16px; border: none; border-bottom: 2px solid transparent;
-    font-size: 13px;
+    background: transparent; color: {TEXT_MUTED};
+    padding: 9px 18px; margin: 0; border: none;
+    border-bottom: 2px solid transparent;
 }}
 QTabBar::tab:hover {{ color: {TEXT}; }}
-QTabBar::tab:selected {{ color: {TEXT}; border-bottom: 2px solid {ACCENT}; font-weight: 600; }}
+QTabBar::tab:selected {{ color: {TEXT}; border-bottom: 2px solid {ACCENT}; }}
 
-#Card {{
-    background: {PANEL}; border: 1px solid {LINE}; border-radius: 4px;
+/* Surfaces -------------------------------------------------------------- */
+#Panel {{ background: {SURFACE}; border: 1px solid {LINE_SOFT}; border-radius: 2px; }}
+#Inset {{ background: {BACKGROUND}; border: 1px solid {LINE_SOFT}; border-radius: 2px; }}
+#Heading {{ color: {TEXT}; font-size: 13px; font-weight: 600; }}
+#Subheading {{ color: {TEXT_MUTED}; font-size: 12px; font-weight: 600; }}
+#Muted {{ color: {TEXT_MUTED}; }}
+#Faint {{ color: {TEXT_FAINT}; font-size: 12px; }}
+#Notice {{
+    background: {SURFACE}; border-left: 2px solid {LINE};
+    color: {TEXT_MUTED}; padding: 9px 12px;
 }}
-#CardTitle {{
-    color: {TEXT}; font-size: 12px; font-weight: 700;
-    letter-spacing: 1.4px; text-transform: uppercase;
-}}
-#SectionLabel {{
-    color: {DIM}; font-size: 11px; font-weight: 600; letter-spacing: 1.4px;
-}}
-#Dim {{ color: {DIM}; }}
-#Hint {{
-    background: {PANEL_RAISED}; border: 1px solid {LINE}; border-radius: 3px;
-    color: {DIM}; padding: 10px 13px;
-}}
-#Warning {{
-    background: {PANEL_RAISED}; border: 1px solid #6b5426; border-radius: 3px;
-    color: {DIM}; padding: 10px 13px;
+#NoticeWarning {{
+    background: {SURFACE}; border-left: 2px solid {CAUTION};
+    color: {TEXT_MUTED}; padding: 9px 12px;
 }}
 
+/* Buttons --------------------------------------------------------------- */
 QPushButton {{
-    background: transparent; border: 1px solid {LINE}; border-radius: 3px;
-    color: {TEXT}; padding: 6px 14px;
+    background: {SURFACE_HIGH}; border: 1px solid {LINE};
+    border-radius: 2px; color: {TEXT}; padding: 6px 13px;
 }}
-QPushButton:hover {{ border-color: {ACCENT}; color: {ACCENT}; }}
-QPushButton:disabled {{ color: #5a5b60; border-color: #26272b; }}
+QPushButton:hover {{ background: #2a312c; border-color: #3d453f; }}
+QPushButton:pressed {{ background: #171b18; }}
+QPushButton:disabled {{ color: {TEXT_FAINT}; background: {SURFACE}; border-color: {LINE_SOFT}; }}
 QPushButton#Primary {{
-    background: {ACCENT}; border-color: {ACCENT}; color: {ACCENT_INK}; font-weight: 700;
+    background: {ACCENT}; border-color: {ACCENT}; color: {ACCENT_INK}; font-weight: 600;
 }}
-QPushButton#Primary:hover {{ background: #e6ad46; color: {ACCENT_INK}; }}
-QPushButton#Danger {{ border-color: #5a3230; color: {NEGATIVE}; }}
-QPushButton#Danger:hover {{ border-color: {NEGATIVE}; color: {NEGATIVE}; }}
+QPushButton#Primary:hover {{ background: {ACCENT_HOVER}; border-color: {ACCENT_HOVER}; }}
+QPushButton#Destructive {{ color: {NEGATIVE}; border-color: #4a2d2a; }}
+QPushButton#Destructive:hover {{ border-color: {NEGATIVE}; background: #2a1e1c; }}
+QPushButton#Quiet {{
+    background: transparent; border: 1px solid transparent; color: {TEXT_MUTED};
+    padding: 4px 8px;
+}}
+QPushButton#Quiet:hover {{ color: {TEXT}; background: {SURFACE_HIGH}; }}
 
-QPushButton#Chip {{
-    border: 1px solid {LINE}; border-radius: 3px; color: {DIM};
-    padding: 4px 11px; font-size: 12px;
+/* Segmented selectors --------------------------------------------------- */
+QPushButton#Segment {{
+    background: transparent; border: 1px solid {LINE};
+    border-radius: 2px; color: {TEXT_MUTED};
+    padding: 4px 10px; font-size: 12px;
 }}
-QPushButton#Chip:hover {{ color: {TEXT}; }}
-QPushButton#Chip:checked {{
-    background: {ACCENT}; border-color: {ACCENT}; color: {ACCENT_INK}; font-weight: 700;
+QPushButton#Segment:hover {{ color: {TEXT}; border-color: #3d453f; }}
+QPushButton#Segment:checked {{
+    background: {ACCENT}; border-color: {ACCENT}; color: {ACCENT_INK}; font-weight: 600;
 }}
 
+/* Inputs ---------------------------------------------------------------- */
 QLineEdit, QComboBox, QDoubleSpinBox, QSpinBox, QTextEdit, QPlainTextEdit {{
-    background: {BACKGROUND}; border: 1px solid {LINE}; border-radius: 3px;
-    color: {TEXT}; padding: 5px 8px; selection-background-color: {ACCENT};
-    selection-color: {ACCENT_INK};
+    background: {BACKGROUND}; border: 1px solid {LINE}; border-radius: 2px;
+    color: {TEXT}; padding: 5px 8px;
+    selection-background-color: {ACCENT}; selection-color: {ACCENT_INK};
 }}
 QLineEdit:focus, QComboBox:focus, QDoubleSpinBox:focus, QTextEdit:focus {{
     border-color: {ACCENT};
 }}
-QComboBox::drop-down {{ border: none; width: 18px; }}
+QComboBox::drop-down {{ border: none; width: 16px; }}
 QComboBox QAbstractItemView {{
-    background: {PANEL}; border: 1px solid {LINE}; color: {TEXT};
-    selection-background-color: {ACCENT}; selection-color: {ACCENT_INK};
+    background: {SURFACE}; border: 1px solid {LINE}; color: {TEXT};
+    selection-background-color: {ACCENT}; selection-color: {ACCENT_INK}; outline: none;
+}}
+
+/* Tables ---------------------------------------------------------------- */
+QTableWidget, QTableView {{
+    background: {SURFACE}; alternate-background-color: {SURFACE};
+    gridline-color: transparent; border: 1px solid {LINE_SOFT}; border-radius: 2px;
+    selection-background-color: #2b332d; selection-color: {TEXT};
     outline: none;
 }}
-
-QTableWidget, QTableView {{
-    background: {PANEL}; alternate-background-color: #202125;
-    gridline-color: #26272b; border: 1px solid {LINE}; border-radius: 3px;
-    selection-background-color: #2f3036; selection-color: {TEXT};
-}}
 QHeaderView::section {{
-    background: {PANEL}; color: {DIM}; border: none;
-    border-bottom: 1px solid {LINE}; padding: 6px 8px;
-    font-size: 11px; font-weight: 600; letter-spacing: 1px;
+    background: {SURFACE}; color: {TEXT_FAINT}; border: none;
+    border-bottom: 1px solid {LINE}; padding: 6px 8px; font-size: 12px; font-weight: 600;
 }}
-QTableWidget::item {{ padding: 4px 6px; }}
+QHeaderView::section:hover {{ color: {TEXT_MUTED}; }}
+QTableWidget::item {{ padding: 3px 8px; border-bottom: 1px solid {LINE_SOFT}; }}
+QTableWidget#Compact::item {{ padding: 1px 8px; }}
+QTableWidget::item:selected {{ background: #2b332d; }}
 
-QScrollArea {{ border: none; background: {BACKGROUND}; }}
-QScrollBar:vertical {{ background: {BACKGROUND}; width: 10px; margin: 0; }}
-QScrollBar::handle:vertical {{ background: #3a3b40; border-radius: 5px; min-height: 30px; }}
-QScrollBar::handle:vertical:hover {{ background: #4a4b50; }}
+/* Scrollbars ------------------------------------------------------------ */
+QScrollArea {{ border: none; background: transparent; }}
+QScrollBar:vertical {{ background: transparent; width: 9px; margin: 0; }}
+QScrollBar::handle:vertical {{ background: #333b35; border-radius: 4px; min-height: 28px; }}
+QScrollBar::handle:vertical:hover {{ background: #414a44; }}
+QScrollBar:horizontal {{ background: transparent; height: 9px; margin: 0; }}
+QScrollBar::handle:horizontal {{ background: #333b35; border-radius: 4px; min-width: 28px; }}
 QScrollBar::add-line, QScrollBar::sub-line {{ height: 0; width: 0; }}
-QScrollBar:horizontal {{ background: {BACKGROUND}; height: 10px; margin: 0; }}
-QScrollBar::handle:horizontal {{ background: #3a3b40; border-radius: 5px; min-width: 30px; }}
+QScrollBar::add-page, QScrollBar::sub-page {{ background: transparent; }}
+
+/* Sliders --------------------------------------------------------------- */
+QSlider::groove:horizontal {{ height: 3px; background: {LINE}; border-radius: 1px; }}
+QSlider::sub-page:horizontal {{ background: {ACCENT}; border-radius: 1px; }}
+QSlider::handle:horizontal {{
+    background: {TEXT}; width: 11px; height: 11px;
+    margin: -4px 0; border-radius: 5px;
+}}
 
 QToolTip {{
-    background: #0e0e10; color: {TEXT}; border: 1px solid {LINE};
-    padding: 6px 8px;
+    background: #0f120f; color: {TEXT}; border: 1px solid {LINE}; padding: 5px 7px;
 }}
 
-#DropZone {{
-    background: {BACKGROUND}; border: 1px dashed #4a4b50; border-radius: 4px;
-    color: {DIM};
+#DropTarget {{
+    background: {BACKGROUND}; border: 1px dashed #3b443d;
+    border-radius: 2px; color: {TEXT_MUTED};
 }}
-#DropZone[active="true"] {{ border-color: {ACCENT}; color: {TEXT}; }}
+#DropTarget[active="true"] {{ border-color: {ACCENT}; color: {TEXT}; }}
 
-QProgressBar {{
-    border: 1px solid {LINE}; border-radius: 3px; background: {BACKGROUND};
-    text-align: center; color: {DIM};
-}}
-QProgressBar::chunk {{ background: {ACCENT}; }}
+QSplitter::handle {{ background: {LINE_SOFT}; }}
+QSplitter::handle:horizontal {{ width: 1px; }}
 """

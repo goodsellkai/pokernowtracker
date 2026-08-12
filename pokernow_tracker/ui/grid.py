@@ -96,7 +96,7 @@ class RangeGrid(QWidget):
     def paintEvent(self, event) -> None:
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing, False)
-        painter.fillRect(self.rect(), QColor(theme.BACKGROUND))
+        painter.fillRect(self.rect(), theme.GRID_BACKGROUND)
 
         left, top, step = self._metrics()
         if step <= 0:
@@ -111,7 +111,7 @@ class RangeGrid(QWidget):
 
         # Rank headers along the top and left edge.
         painter.setFont(header_font)
-        painter.setPen(QPen(QColor(theme.DIM)))
+        painter.setPen(QPen(QColor(theme.TEXT_FAINT)))
         for index, rank in enumerate(RANKS):
             painter.drawText(
                 QRectF(left + index * step, top - 18, step, 18),
@@ -194,13 +194,13 @@ class Legend(QWidget):
 
     def paintEvent(self, event) -> None:
         painter = QPainter(self)
-        painter.fillRect(self.rect(), QColor(theme.BACKGROUND))
+        painter.fillRect(self.rect(), theme.GRID_BACKGROUND)
         metrics = QFontMetrics(self.font())
         x = 0.0
         for label, colour in self._entries:
             painter.fillRect(QRectF(x, 5, 11, 11), colour)
             x += 15
-            painter.setPen(QPen(QColor(theme.DIM)))
+            painter.setPen(QPen(QColor(theme.TEXT_FAINT)))
             painter.drawText(QRectF(x, 0, metrics.horizontalAdvance(label) + 4, 20),
                              Qt.AlignVCenter | Qt.AlignLeft, label)
             x += metrics.horizontalAdvance(label) + 16

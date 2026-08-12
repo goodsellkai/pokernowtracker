@@ -6,24 +6,30 @@ from typing import List, Optional
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QComboBox, QDoubleSpinBox, QHBoxLayout, QLabel, QSlider, QVBoxLayout, QWidget,
+    QComboBox, QDoubleSpinBox, QHBoxLayout, QLabel, QScrollArea, QSlider,
+    QVBoxLayout, QWidget,
 )
 
-from ..ranges import ACTION_GROUPS, ACTIONS, ANY_POSITION, SIZEABLE, TableAverages, tiers
-from ..stats import classify
+from ..ranges import ACTION_GROUPS, ANY_POSITION, SIZEABLE, TableAverages, tiers
+from ..stats import classify, summarize
 from ..store import POSITIONS, Player, Store
 from . import theme, views
 from .grid import Legend, RangeGrid
-from .widgets import Card, ChipRow, dim, format_percent, section
+from .widgets import (
+    Panel, Rule, Segmented, faint, format_percent, heading, muted, subheading,
+)
 
 POSITION_OPTIONS = [(ANY_POSITION, "Any")] + [(p, p) for p in POSITIONS]
 
+#: Width of the controls rail beside the grid; selectors wrap to fit it.
+RAIL_WIDTH = 268
+
 
 class RangePanel(QWidget):
-    """Range chart with its view, position, and action controls.
+    """A range chart with its view, position, and action controls.
 
-    Used both as the Range Finder tab's body and inside a player's detail
-    window, so the two always agree.
+    Used by the Range Finder tab and by the player window, so the two always
+    agree on what a range looks like.
     """
 
     def __init__(self, compact: bool = False, parent: Optional[QWidget] = None):
@@ -35,109 +41,131 @@ class RangePanel(QWidget):
         self._action = "open"
         self._overrides: Optional[tuple[float, float, float]] = None
 
-        # Controls sit beside the grid when there is room, and above it when the
-        # panel is embedded somewhere narrow.
+        controls = self._build_controls(compact)
+        display = self._build_display()
+
+        if compact:
+            outer = QVBoxLayout(self)
+            outer.setContentsMargins(0, 0, 0, 0)
+            outer.setSpacing(12)
+            outer.addWidget(controls)
+            outer.addWidget(display, 1)
+        else:
+            controls.setFixedWidth(RAIL_WIDTH)
+            outer = QHBoxLayout(self)
+            outer.setContentsMargins(0, 0, 0, 0)
+            outer.setSpacing(22)
+            outer.addWidget(controls)
+            outer.addWidget(display, 1)
+
+    def _build_controls(self, compact: bool) -> QWidget:
         controls = QWidget()
         column = QVBoxLayout(controls)
         column.setContentsMargins(0, 0, 0, 0)
-        column.setSpacing(8)
+        column.setSpacing(12)
 
-        self._views = ChipRow("View", views.VIEW_LABELS, self._view, label_width=58)
+        wrap = 0 if compact else RAIL_WIDTH
+        self._views = Segmented(
+            "View", views.VIEW_LABELS, self._view, vertical=not compact, wrap_width=wrap
+        )
         self._views.changed.connect(self._on_view)
         column.addWidget(self._views)
 
-        self._positions = ChipRow("Position", POSITION_OPTIONS, self._position, label_width=58)
+        self._positions = Segmented(
+            "Position", POSITION_OPTIONS, self._position, vertical=not compact,
+            wrap_width=wrap,
+        )
         self._positions.changed.connect(self._on_position)
         column.addWidget(self._positions)
 
-        self._action_rows: List[ChipRow] = []
-        for group, actions in ACTION_GROUPS:
-            row = ChipRow(group, list(actions), self._action if any(
-                key == self._action for key, _ in actions) else "", label_width=96)
+        self._action_block = QWidget()
+        actions = QVBoxLayout(self._action_block)
+        actions.setContentsMargins(0, 0, 0, 0)
+        actions.setSpacing(8)
+        actions.addWidget(Rule())
+
+        self._action_rows: List[Segmented] = []
+        for group, options in ACTION_GROUPS:
+            current = self._action if any(key == self._action for key, _ in options) else ""
+            row = Segmented(
+                group, list(options), current, vertical=not compact, wrap_width=wrap
+            )
             row.changed.connect(self._on_action)
-            column.addWidget(row)
+            actions.addWidget(row)
             self._action_rows.append(row)
 
+        self._size_block = QWidget()
+        size_column = QVBoxLayout(self._size_block)
+        size_column.setContentsMargins(0, 0, 0, 0)
+        size_column.setSpacing(4)
+        size_column.addWidget(faint("Raise size"))
         size_row = QHBoxLayout()
-        size_row.setSpacing(6)
-        self._size_label = QLabel("Raise size")
-        self._size_label.setObjectName("Dim")
-        self._size_label.setFixedWidth(96 if not compact else 58)
-        size_row.addWidget(self._size_label)
+        size_row.setSpacing(8)
         self._size = QDoubleSpinBox()
         self._size.setRange(0.0, 500.0)
         self._size.setSingleStep(0.5)
         self._size.setDecimals(1)
         self._size.setSpecialValueText("any")
         self._size.setSuffix(" bb")
-        self._size.setFixedWidth(90)
+        self._size.setFixedWidth(96)
+        self._size.setToolTip("Compared against this player's own sizing history")
         self._size.valueChanged.connect(lambda _v: self.refresh())
         size_row.addWidget(self._size)
-        self._size_hint = dim("Optional. Compared against their own sizing history.", wrap=False)
-        size_row.addWidget(self._size_hint)
         size_row.addStretch(1)
-        self._size_widget = QWidget()
-        self._size_widget.setLayout(size_row)
-        column.addWidget(self._size_widget)
+        size_column.addLayout(size_row)
+        actions.addWidget(self._size_block)
+        column.addWidget(self._action_block)
 
-        # Sliders, shown only for the estimated view.
-        self._slider_widget = QWidget()
-        sliders = QVBoxLayout(self._slider_widget)
+        self._slider_block = QWidget()
+        sliders = QVBoxLayout(self._slider_block)
         sliders.setContentsMargins(0, 0, 0, 0)
-        sliders.setSpacing(4)
+        sliders.setSpacing(6)
+        sliders.addWidget(Rule())
+        sliders.addWidget(faint("Adjust the cutoffs"))
         self._vpip_slider, self._vpip_value = self._make_slider("Entered", sliders)
         self._open_slider, self._open_value = self._make_slider("Raised", sliders)
-        column.addWidget(self._slider_widget)
+        column.addWidget(self._slider_block)
 
         column.addStretch(1)
+        return controls
 
+    def _build_display(self) -> QWidget:
         display = QWidget()
-        right = QVBoxLayout(display)
-        right.setContentsMargins(0, 0, 0, 0)
-        right.setSpacing(8)
+        column = QVBoxLayout(display)
+        column.setContentsMargins(0, 0, 0, 0)
+        column.setSpacing(10)
 
         self._grid = RangeGrid()
-        right.addWidget(self._grid, 1)
+        column.addWidget(self._grid, 1)
 
         self._legend = Legend()
-        right.addWidget(self._legend)
+        column.addWidget(self._legend)
 
-        self._caption = dim("")
-        right.addWidget(self._caption)
-
-        if compact:
-            outer = QVBoxLayout(self)
-            outer.setContentsMargins(0, 0, 0, 0)
-            outer.setSpacing(10)
-            outer.addWidget(controls)
-            outer.addWidget(display, 1)
-        else:
-            controls.setFixedWidth(470)
-            outer = QHBoxLayout(self)
-            outer.setContentsMargins(0, 0, 0, 0)
-            outer.setSpacing(24)
-            outer.addWidget(controls)
-            outer.addWidget(display, 1)
+        self._caption = muted("")
+        self._caption.setMinimumHeight(46)
+        self._caption.setAlignment(Qt.AlignTop)
+        column.addWidget(self._caption)
+        return display
 
     def _make_slider(self, label: str, parent_layout) -> tuple[QSlider, QLabel]:
         row = QHBoxLayout()
         row.setSpacing(8)
         caption = QLabel(label)
-        caption.setObjectName("Dim")
-        caption.setFixedWidth(58)
+        caption.setObjectName("Faint")
+        caption.setFixedWidth(52)
         row.addWidget(caption)
         slider = QSlider(Qt.Horizontal)
         slider.setRange(0, 100)
         slider.valueChanged.connect(self._on_slider)
         row.addWidget(slider, 1)
         value = QLabel("0%")
-        value.setFixedWidth(42)
+        value.setFixedWidth(38)
         value.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         row.addWidget(value)
         parent_layout.addLayout(row)
         return slider, value
 
-    # -------------------------------------------------------------- wiring
+    # --------------------------------------------------------------- wiring
 
     def set_player(self, player: Player, table: TableAverages) -> None:
         self._player = player
@@ -209,10 +237,9 @@ class RangePanel(QWidget):
 
     def refresh(self) -> None:
         weighted = self._view == views.WEIGHTED
-        for row in self._action_rows:
-            row.setVisible(weighted)
-        self._size_widget.setVisible(weighted and self._action in SIZEABLE)
-        self._slider_widget.setVisible(self._view == views.ESTIMATED)
+        self._action_block.setVisible(weighted)
+        self._size_block.setVisible(weighted and self._action in SIZEABLE)
+        self._slider_block.setVisible(self._view == views.ESTIMATED)
 
         if self._player is None or self._table is None:
             self._grid.clear()
@@ -246,36 +273,40 @@ class RangeFinderTab(QWidget):
         self._players: List[Player] = []
 
         column = QVBoxLayout(self)
-        column.setContentsMargins(16, 14, 16, 14)
+        column.setContentsMargins(18, 16, 18, 16)
         column.setSpacing(12)
 
-        card = Card()
+        panel = Panel()
         header = QHBoxLayout()
-        header.setSpacing(10)
+        header.setSpacing(12)
         self._picker = QComboBox()
-        self._picker.setMinimumWidth(220)
+        self._picker.setMinimumWidth(230)
         self._picker.currentIndexChanged.connect(self._on_pick)
         header.addWidget(self._picker)
-        self._summary = dim("", wrap=False)
+        self._summary = faint("", wrap=False)
         header.addWidget(self._summary)
         header.addStretch(1)
-        card.add_layout(header)
+        panel.add_layout(header)
+        panel.add(Rule())
 
         self._panel = RangePanel()
-        card.add(self._panel)
-        column.addWidget(card, 1)
+        panel.add(self._panel)
+        column.addWidget(panel, 1)
 
-        self._empty = dim("No players yet. Import a hand history to get started.")
+        self._empty = muted("No players yet. Import a hand history from the Import tab.")
         column.addWidget(self._empty)
 
     def reload(self) -> None:
+        previous = self._picker.currentData()
         self._players = sorted(
             self._store.players.values(), key=lambda p: -p.counters["hands"]
         )
         self._picker.blockSignals(True)
         self._picker.clear()
         for player in self._players:
-            self._picker.addItem(f"{player.name}  ({int(player.counters['hands'])} hands)", player.id)
+            self._picker.addItem(
+                f"{player.name}   {int(player.counters['hands'])} hands", player.id
+            )
         self._picker.blockSignals(False)
 
         has_players = bool(self._players)
@@ -283,8 +314,13 @@ class RangeFinderTab(QWidget):
         self._picker.setVisible(has_players)
         self._summary.setVisible(has_players)
         self._panel.setVisible(has_players)
+
         if has_players:
-            self._on_pick(0)
+            index = next(
+                (i for i, p in enumerate(self._players) if p.id == previous), 0
+            )
+            self._picker.setCurrentIndex(index)
+            self._on_pick(index)
 
     def show_player(self, player: Player, action: str = "", position: str = "") -> None:
         for index, candidate in enumerate(self._players):
@@ -297,16 +333,13 @@ class RangeFinderTab(QWidget):
             self._panel.set_action(action)
 
     def _on_pick(self, index: int) -> None:
-        if not self._players or index < 0 or index >= len(self._players):
+        if not self._players or not 0 <= index < len(self._players):
             return
         player = self._players[index]
-        from ..stats import summarize
-
         stats = summarize(player)
         self._summary.setText(
-            f"{classify(player)}   ·   VPIP {format_percent(stats.vpip)}"
-            f"   ·   RFI {format_percent(stats.rfi)}"
-            f"   ·   3-bet {format_percent(stats.three_bet)}"
+            f"{classify(player)}     VPIP {format_percent(stats.vpip)}"
+            f"     RFI {format_percent(stats.rfi)}"
+            f"     3-bet {format_percent(stats.three_bet)}"
         )
-        table = TableAverages(list(self._store.players.values()))
-        self._panel.set_player(player, table)
+        self._panel.set_player(player, TableAverages(list(self._store.players.values())))

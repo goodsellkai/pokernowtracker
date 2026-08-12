@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Optional
 
 from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QComboBox, QDialog, QHBoxLayout, QHeaderView, QLabel, QMessageBox,
     QPushButton, QScrollArea, QTableWidget, QTableWidgetItem, QTextEdit,
@@ -17,7 +18,8 @@ from ..store import POSITIONS, Player, Store
 from . import theme
 from .finder import RangePanel
 from .widgets import (
-    Badge, Separator, dim, format_factor, format_money, format_percent, section,
+    Panel, Rule, Tag, faint, format_factor, format_money, format_percent,
+    heading, muted, subheading,
 )
 
 TAGS = ["", "Nit", "Rock", "TAG", "LAG", "Reg", "Fish", "Station", "Maniac", "Whale"]
@@ -64,11 +66,11 @@ class PlayerDetail(QDialog):
         row.addWidget(name)
 
         style = classify(self._player)
-        row.addWidget(Badge(style, theme.STYLE_BADGE.get(style, "#566573")))
+        row.addWidget(Tag(style, theme.STYLE_COLOUR.get(style, theme.TEXT_MUTED)))
 
         stats = summarize(self._player)
         if stats.hands < 25:
-            row.addWidget(dim("Small sample, treat these as rough.", wrap=False))
+            row.addWidget(muted("Small sample, treat these as rough.", wrap=False))
         row.addStretch(1)
 
         finder = QPushButton("Open in Range Finder")
@@ -88,12 +90,12 @@ class PlayerDetail(QDialog):
         column.setContentsMargins(0, 0, 8, 0)
         column.setSpacing(10)
 
-        column.addWidget(section("Statistics"))
-        column.addWidget(dim("▲ notably higher, ▼ notably lower than this table's average."))
+        column.addWidget(subheading("Statistics"))
+        column.addWidget(muted("▲ notably higher, ▼ notably lower than this table's average."))
         self._stats_table = self._make_table(2)
         column.addWidget(self._stats_table)
 
-        column.addWidget(section("By position"))
+        column.addWidget(subheading("By position"))
         self._position_table = self._make_table(8)
         self._position_table.setHorizontalHeaderLabels(
             ["Seat", "Hands", "VPIP", "PFR", "RFI", "Limp", "Call", "3Bet"]
@@ -101,13 +103,13 @@ class PlayerDetail(QDialog):
         self._position_table.horizontalHeader().setVisible(True)
         column.addWidget(self._position_table)
 
-        column.addWidget(section("Sessions"))
+        column.addWidget(subheading("Sessions"))
         self._session_table = self._make_table(3)
         self._session_table.setHorizontalHeaderLabels(["Date", "Hands", "Result"])
         self._session_table.horizontalHeader().setVisible(True)
         column.addWidget(self._session_table)
 
-        column.addWidget(section("Tag"))
+        column.addWidget(subheading("Tag"))
         self._tag = QComboBox()
         self._tag.addItems(["(none)" if t == "" else t for t in TAGS])
         current = self._player.tag or ""
@@ -115,7 +117,7 @@ class PlayerDetail(QDialog):
         self._tag.currentIndexChanged.connect(self._on_tag)
         column.addWidget(self._tag)
 
-        column.addWidget(section("Notes"))
+        column.addWidget(subheading("Notes"))
         self._notes = QTextEdit()
         self._notes.setPlaceholderText("Tells, tendencies, bet sizing")
         self._notes.setPlainText(self._player.note)
@@ -132,7 +134,7 @@ class PlayerDetail(QDialog):
         column = QVBoxLayout(panel)
         column.setContentsMargins(0, 0, 0, 0)
         column.setSpacing(8)
-        column.addWidget(section("Preflop range"))
+        column.addWidget(subheading("Preflop range"))
         self._panel = RangePanel(compact=True)
         self._panel.set_player(self._player, TableAverages(list(self._store.players.values())))
         column.addWidget(self._panel, 1)
@@ -141,7 +143,7 @@ class PlayerDetail(QDialog):
     def _build_footer(self) -> QHBoxLayout:
         row = QHBoxLayout()
         row.setSpacing(8)
-        row.addWidget(dim("Merge into", wrap=False))
+        row.addWidget(muted("Merge into", wrap=False))
 
         self._merge_target = QComboBox()
         self._merge_target.addItem("Select a player", None)
@@ -156,13 +158,15 @@ class PlayerDetail(QDialog):
 
         row.addStretch(1)
         delete = QPushButton("Delete player")
-        delete.setObjectName("Danger")
+        delete.setObjectName("Destructive")
         delete.clicked.connect(self._on_delete)
         row.addWidget(delete)
         return row
 
     def _make_table(self, columns: int) -> QTableWidget:
         table = QTableWidget(0, columns)
+        table.setObjectName("Compact")
+        table.verticalHeader().setDefaultSectionSize(24)
         table.verticalHeader().setVisible(False)
         table.horizontalHeader().setVisible(False)
         table.setSelectionMode(QTableWidget.NoSelection)
@@ -230,10 +234,8 @@ class PlayerDetail(QDialog):
         table.setRowCount(len(rows))
         for index, (label, value, direction, note) in enumerate(rows):
             if not value and not note:
-                header = QTableWidgetItem(label)
-                header.setForeground(Qt.GlobalColor.transparent)
                 item = QTableWidgetItem(label)
-                item.setForeground(__import__("PySide6.QtGui", fromlist=["QColor"]).QColor(theme.ACCENT))
+                item.setForeground(QColor(theme.ACCENT))
                 font = item.font()
                 font.setBold(True)
                 font.setPointSizeF(font.pointSizeF() - 1)
@@ -245,7 +247,6 @@ class PlayerDetail(QDialog):
             left = QTableWidgetItem(f"{label}   {note}" if note else label)
             right = QTableWidgetItem(value)
             right.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-            from PySide6.QtGui import QColor
 
             if direction == "high":
                 right.setForeground(QColor(theme.NEGATIVE))
@@ -255,8 +256,7 @@ class PlayerDetail(QDialog):
                 right.setForeground(QColor(theme.POSITIVE if stats.net >= 0 else theme.NEGATIVE))
             table.setItem(index, 0, left)
             table.setItem(index, 1, right)
-        table.resizeRowsToContents()
-        table.setFixedHeight(min(640, 4 + sum(table.rowHeight(r) for r in range(table.rowCount()))))
+        table.setFixedHeight(4 + sum(table.rowHeight(r) for r in range(table.rowCount())))
 
         seats = [(seat, positional(player, seat)) for seat in POSITIONS]
         seats = [(seat, values) for seat, values in seats if values]
@@ -270,15 +270,12 @@ class PlayerDetail(QDialog):
             ]
             for column, text in enumerate(cells):
                 self._position_table.setItem(index, column, QTableWidgetItem(text))
-        self._position_table.resizeRowsToContents()
         self._position_table.setFixedHeight(
-            30 + sum(self._position_table.rowHeight(r) for r in range(len(seats)))
+            32 + sum(self._position_table.rowHeight(r) for r in range(len(seats)))
         )
 
         sessions = player.sessions[-10:][::-1]
         self._session_table.setRowCount(len(sessions))
-        from PySide6.QtGui import QColor
-
         for index, entry in enumerate(sessions):
             date = QTableWidgetItem(str(entry["t"])[:10])
             hands = QTableWidgetItem(str(int(entry["hands"])))
@@ -287,9 +284,8 @@ class PlayerDetail(QDialog):
             result.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
             for column, item in enumerate((date, hands, result)):
                 self._session_table.setItem(index, column, item)
-        self._session_table.resizeRowsToContents()
         self._session_table.setFixedHeight(
-            30 + sum(self._session_table.rowHeight(r) for r in range(len(sessions)))
+            32 + sum(self._session_table.rowHeight(r) for r in range(len(sessions)))
         )
 
     # -------------------------------------------------------------- actions
