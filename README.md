@@ -110,47 +110,6 @@ The estimate combines a statistical model of how often a player takes an action 
 
 **Unobserved hands are corrected for survivorship.** Opponents' folds are rarely visible, so each player is assigned a show rate: the proportion of hands they played for which cards were actually seen. An observation is then weighed against how often that combination should have appeared across the sample, and a real shortfall is treated as implied folds. The shortfall is discounted for variance, since small gaps are ordinary showdown luck, and for prior strength, since the absence of a hand the model is confident a player always plays carries little information.
 
-## Where data is kept
-
-Everything runs locally. No data is transmitted anywhere, and there is no backend.
-
-Records live in `~/.pokernow-tracker` unless the **Data** tab is pointed somewhere else. Statistics are held in `data.json`, and the imported logs themselves are archived alongside them so that every derived number can be regenerated whenever the analysis changes. The same file is never imported twice, and only the fullest export of each game is kept.
-
-Hand-history exports contain the display names of everyone at the table. The included `.gitignore` excludes `*.csv` so that logs are not committed by accident.
-
-## Development
-
-Running from a source checkout needs Python 3.9 or newer. Double-clicking `PokerNow Tracker.pyw` on Windows or `PokerNow Tracker.command` elsewhere starts it, offering to install the interface toolkit on first run. `pip install .` provides a `pokernow` command instead, and `python -m pokernow_tracker` runs it in place.
-
-```bash
-pip install -e . pytest
-pytest
-```
-
-Building the downloadable applications takes one command, and produces a build for whichever system runs it:
-
-```bash
-pip install pyinstaller
-python packaging/build.py
-```
-
-Pushing a `v*` tag runs the same build on Windows, Apple silicon, and Intel macOS runners and publishes the results to a GitHub release. The icon is drawn from `packaging/icon.py` rather than checked in, so it stays in step with the interface palette.
-
-| Module | Responsibility |
-| --- | --- |
-| `cards.py` | Starting-hand notation and strength orderings |
-| `logparse.py` | Reading hand-history exports |
-| `ingest.py` | Replaying hands into statistics |
-| `stats.py` | Derived statistics and table-relative comparison |
-| `ranges.py` | The range model |
-| `store.py` | Persistence and the log archive |
-| `ui/` | The interface |
-| `packaging/` | The icon, the PyInstaller build, and its entry point |
-
-The analysis engine knows nothing about the interface, and is exercised independently by the tests.
-
-The test suite builds synthetic hand histories rather than depending on real ones. It covers the parser, the money reconciliation, opportunity counting, the range model's invariants (including that each decision's options sum to exactly 100% and that every action's range mass matches the measured frequency), and the interface, which is rendered offscreen so it can be checked on a build server.
-
 ## License
 
 Released under the [GNU Affero General Public License v3.0](LICENSE). Modified versions that are made available over a network must publish their source under the same terms.
