@@ -55,6 +55,7 @@ class MainWindow(QMainWindow):
         self._import.imported.connect(self.reload)
         self._players.player_opened.connect(self._open_player)
         self._data.changed.connect(self.reload)
+        self._data.relocated.connect(self._use_folder)
         self._tabs.currentChanged.connect(lambda _i: self._refresh_current())
 
         self._check_stale()
@@ -125,6 +126,18 @@ class MainWindow(QMainWindow):
             self._players.reload()
         elif current is self._data:
             self._data.reload()
+
+    def _use_folder(self, folder: Path) -> None:
+        """Point every tab at data kept somewhere else."""
+        for window in list(self._windows):
+            window.close()
+        self._windows.clear()
+
+        self._store = Store(folder)
+        for tab in (self._import, self._players, self._finder, self._data):
+            tab.set_store(self._store)
+        self._check_stale()
+        self.reload()
 
     def _reload_from_disk(self) -> None:
         self._store.load()

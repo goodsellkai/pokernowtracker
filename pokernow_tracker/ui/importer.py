@@ -111,6 +111,9 @@ class ImportTab(QWidget):
 
         column.addWidget(card, 1)
 
+    def set_store(self, store: Store) -> None:
+        self._store = store
+
     def _import(self, paths: List[Path]) -> None:
         from PySide6.QtGui import QColor
 

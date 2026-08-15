@@ -296,6 +296,9 @@ class RangeFinderTab(QWidget):
         self._empty = muted("No players yet. Import a hand history from the Import tab.")
         column.addWidget(self._empty)
 
+    def set_store(self, store: Store) -> None:
+        self._store = store
+
     def reload(self) -> None:
         previous = self._picker.currentData()
         self._players = sorted(

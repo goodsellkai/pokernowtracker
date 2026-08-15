@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-import argparse
 import sys
 from pathlib import Path
-from typing import Optional, Sequence
+from typing import List, Optional, Sequence
 
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication
@@ -15,26 +14,29 @@ from . import theme
 from .window import MainWindow
 
 
-def run(argv: Optional[Sequence[str]] = None) -> int:
-    parser = argparse.ArgumentParser(
-        prog="pokernow",
-        description="Track PokerNow opponents and estimate their preflop ranges.",
-    )
-    parser.add_argument("files", nargs="*", help="hand history exports to open at startup")
-    parser.add_argument("--data-dir", help="where to keep tracked data")
-    args = parser.parse_args(list(argv) if argv is not None else None)
+def _files_from(argv: Optional[Sequence[str]]) -> List[Path]:
+    """Hand histories passed in by a file association or a drop on the icon.
 
+    Anything that is not a readable file is ignored rather than reported: with
+    no terminal attached there is nowhere to report it, and the window is about
+    to open regardless.
+    """
+    given = list(argv) if argv is not None else sys.argv[1:]
+    return [Path(name) for name in given if Path(name).is_file()]
+
+
+def run(argv: Optional[Sequence[str]] = None) -> int:
     app = QApplication(sys.argv[:1])
     app.setApplicationName("PokerNow Tracker")
     app.setStyleSheet(theme.STYLESHEET)
     app.setFont(QFont("Segoe UI", 9))
 
-    store = Store(Path(args.data_dir) if args.data_dir else None)
-    window = MainWindow(store)
+    window = MainWindow(Store())
     window.show()
 
-    if args.files:
-        window.open_files([Path(name) for name in args.files])
+    files = _files_from(argv)
+    if files:
+        window.open_files(files)
 
     return app.exec()
 

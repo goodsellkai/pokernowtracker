@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -118,3 +119,37 @@ def test_theme_colours_are_defined_for_every_action(app):
         assert category in theme.ACTION_COLOUR, category
     for action in ACTIONS:
         assert action in theme.ACTION_HUE, action
+
+
+def test_data_folder_can_be_moved_from_the_app(app, populated, tmp_path, monkeypatch):
+    from pokernow_tracker import store as store_module
+    from pokernow_tracker.ui.window import MainWindow
+
+    settings = tmp_path / "settings.json"
+    monkeypatch.setattr(store_module, "SETTINGS_PATH", settings)
+
+    window = MainWindow(populated)
+    destination = tmp_path / "elsewhere"
+    destination.mkdir()
+
+    window._use_folder(destination)
+
+    assert window._store.dir == destination
+    # Every tab follows the move, so nothing keeps writing to the old folder.
+    for tab in (window._import, window._players, window._finder, window._data):
+        assert tab._store is window._store
+    assert store_module.load_settings() == {}  # _use_folder does not itself persist
+    window.close()
+
+
+def test_remembered_folder_is_used_next_time(tmp_path, monkeypatch):
+    from pokernow_tracker import store as store_module
+
+    monkeypatch.delenv("POKERNOW_TRACKER_HOME", raising=False)
+    monkeypatch.setattr(store_module, "SETTINGS_PATH", tmp_path / "settings.json")
+
+    store_module.remember_data_dir(tmp_path / "chosen")
+    assert store_module.default_data_dir() == tmp_path / "chosen"
+
+    store_module.remember_data_dir(None)
+    assert store_module.default_data_dir() == Path.home() / ".pokernow-tracker"

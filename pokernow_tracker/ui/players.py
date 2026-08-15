@@ -119,6 +119,9 @@ class PlayersTab(QWidget):
         if player:
             self.player_opened.emit(player)
 
+    def set_store(self, store: Store) -> None:
+        self._store = store
+
     def reload(self) -> None:
         players = sorted(self._store.players.values(), key=lambda p: -p.counters["hands"])
         if self._search:
@@ -162,7 +165,7 @@ class PlayersTab(QWidget):
                 "wtsd": (format_percent(stats.wtsd), stats.wtsd),
                 "net": (format_money(stats.net), stats.net),
                 "bb_per_100": (
-                    "—" if stats.bb_per_100 is None else f"{stats.bb_per_100:+.1f}",
+                    "-" if stats.bb_per_100 is None else f"{stats.bb_per_100:+.1f}",
                     stats.bb_per_100,
                 ),
             }

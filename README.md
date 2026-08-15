@@ -20,19 +20,18 @@ Pick a player, a seat, and a preflop action, and every starting hand is shaded b
 
 ## Installation
 
-Requires Python 3.9 or newer.
+Requires Python 3.9 or newer, which ships with macOS and most Linux distributions and is a [free download](https://www.python.org/downloads/) on Windows.
 
-```bash
-git clone https://github.com/goodsellkai/pokernowtracker.git
-cd pokernowtracker
-pip install .
-```
+Download this repository, then double-click the launcher for your system:
 
-That installs a `pokernow` command that launches the application. It can also be run straight from the source directory without installing:
+| System | File |
+| --- | --- |
+| Windows | `PokerNow Tracker.pyw` |
+| macOS and Linux | `PokerNow Tracker.command` |
 
-```bash
-python -m pokernow_tracker
-```
+The first launch offers to fetch the interface toolkit and shows its progress in a small window. Nothing else is needed, and no terminal is involved at any point.
+
+If you would rather install it as a package, `pip install .` provides a `pokernow` command, and `python -m pokernow_tracker` runs it from a source checkout.
 
 ## Getting started
 
@@ -52,7 +51,7 @@ Statistics accumulate across every log you import. Players are matched by their 
 
 **Range Finder** is the screenshot at the top of this page.
 
-**Data** shows where everything is stored and what is archived, and offers a rebuild, a JSON backup, and a reset.
+**Data** shows where everything is stored and what is archived, and offers a rebuild, a JSON backup, a reset, and a control for moving the data folder somewhere else.
 
 A player's window holds their complete statistics, positional splits, and session history beside their range, along with notes, a tag, and merge and delete controls.
 
@@ -115,7 +114,7 @@ The estimate combines a statistical model of how often a player takes an action 
 
 Everything runs locally. No data is transmitted anywhere, and there is no backend.
 
-Records live in `~/.pokernow-tracker`, or wherever `--data-dir` points. Statistics are held in `data.json`, and the imported logs themselves are archived alongside them so that every derived number can be regenerated whenever the analysis changes. The same file is never imported twice, and only the fullest export of each game is kept.
+Records live in `~/.pokernow-tracker` unless the **Data** tab is pointed somewhere else. Statistics are held in `data.json`, and the imported logs themselves are archived alongside them so that every derived number can be regenerated whenever the analysis changes. The same file is never imported twice, and only the fullest export of each game is kept.
 
 Hand-history exports contain the display names of everyone at the table. The included `.gitignore` excludes `*.csv` so that logs are not committed by accident.
 

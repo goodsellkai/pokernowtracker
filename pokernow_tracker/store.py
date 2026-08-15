@@ -126,11 +126,41 @@ class Session:
         return cls(**raw)
 
 
+#: Settings live beside the default data folder, and survive moving the data
+#: itself somewhere else.
+SETTINGS_PATH = Path.home() / ".pokernow-tracker" / "settings.json"
+
+
+def load_settings() -> Dict[str, str]:
+    try:
+        return json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def save_settings(settings: Dict[str, str]) -> None:
+    SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    SETTINGS_PATH.write_text(json.dumps(settings, indent=1), encoding="utf-8")
+
+
 def default_data_dir() -> Path:
     override = os.environ.get("POKERNOW_TRACKER_HOME")
     if override:
         return Path(override).expanduser()
+    chosen = load_settings().get("data_dir")
+    if chosen:
+        return Path(chosen).expanduser()
     return Path.home() / ".pokernow-tracker"
+
+
+def remember_data_dir(path: Optional[Path]) -> None:
+    """Persist where data should live, or forget a previous choice."""
+    settings = load_settings()
+    if path is None:
+        settings.pop("data_dir", None)
+    else:
+        settings["data_dir"] = str(Path(path).expanduser())
+    save_settings(settings)
 
 
 class Store:

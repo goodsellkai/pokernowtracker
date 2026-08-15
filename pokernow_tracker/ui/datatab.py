@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
 )
 
 from ..ingest import rebuild
-from ..store import Store
+from ..store import Store, remember_data_dir
 from .widgets import Panel, Rule, faint, muted, notice
 
 
@@ -21,6 +21,7 @@ class DataTab(QWidget):
     """Where everything is kept, and how to regenerate or export it."""
 
     changed = Signal()
+    relocated = Signal(object)
 
     def __init__(self, store: Store, parent: Optional[QWidget] = None):
         super().__init__(parent)
@@ -38,6 +39,10 @@ class DataTab(QWidget):
 
         buttons = QHBoxLayout()
         buttons.setSpacing(8)
+        move = QPushButton("Change folder")
+        move.setToolTip("Keep tracked data somewhere else")
+        move.clicked.connect(self._relocate)
+        buttons.addWidget(move)
         export = QPushButton("Export backup")
         export.setObjectName("Primary")
         export.clicked.connect(self._export)
@@ -115,6 +120,25 @@ class DataTab(QWidget):
                 if column == 1:
                     item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
                 self._sessions.setItem(index, column, item)
+
+    def set_store(self, store: Store) -> None:
+        self._store = store
+        self.reload()
+
+    def _relocate(self) -> None:
+        chosen = QFileDialog.getExistingDirectory(
+            self, "Choose where to keep tracked data", str(self._store.dir)
+        )
+        if not chosen:
+            return
+        remember_data_dir(Path(chosen))
+        self.relocated.emit(Path(chosen))
+        QMessageBox.information(
+            self, "Data folder changed",
+            f"Tracked data now lives in\n{chosen}\n\nAnything already saved stays"
+            " where it was; import your logs again, or copy the old folder's"
+            " contents across, to bring it with you.",
+        )
 
     def _rebuild(self) -> None:
         count = rebuild(self._store)

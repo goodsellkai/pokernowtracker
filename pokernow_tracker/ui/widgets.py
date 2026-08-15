@@ -227,12 +227,12 @@ def format_money(amount: float) -> str:
 
 
 def format_percent(value: Optional[float]) -> str:
-    return "—" if value is None else f"{value:.0f}%"
+    return "-" if value is None else f"{value:.0f}%"
 
 
 def format_factor(value: Optional[float]) -> str:
     if value is None:
-        return "—"
+        return "-"
     if math.isinf(value):
         return "∞"
     return f"{value:.1f}"
