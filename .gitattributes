@@ -1,0 +1,5 @@
+* text=auto
+
+# Shell launchers must keep Unix line endings, or the shebang is unreadable
+# on the systems that run them.
+*.command text eol=lf
