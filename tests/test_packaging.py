@@ -93,5 +93,5 @@ def test_the_release_workflow_builds_every_system_people_use():
     workflow = (ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
     assert "windows-latest" in workflow
     assert "macos-latest" in workflow  # Apple silicon
-    assert "macos-13" in workflow      # Intel
+    assert "macos-15-intel" in workflow  # Intel, which arm64 builds cannot serve
     assert "if-no-files-found: error" in workflow  # a silent empty release is worse

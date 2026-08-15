@@ -24,7 +24,10 @@ jobs:
           - os: macos-latest
             label: macOS (Apple silicon)
             artifact: PokerNow-Tracker-macOS-AppleSilicon
-          - os: macos-13
+          # An Apple silicon build will not run on an Intel Mac, so Intel is
+          # built on its own runner. The label follows GitHub's current Intel
+          # image; macos-13 was retired.
+          - os: macos-15-intel
             label: macOS (Intel)
             artifact: PokerNow-Tracker-macOS-Intel
 
