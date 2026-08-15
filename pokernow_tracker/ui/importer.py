@@ -82,9 +82,11 @@ class ImportTab(QWidget):
         column.setSpacing(12)
 
         column.addWidget(notice(
-            "In PokerNow, open the game's Log panel and download the hand history CSV, then"
-            " drop it here. Statistics accumulate across every log you import. Re-importing"
-            " a log you already have is safe, because hands are matched by their id."
+            "To get a hand history out of PokerNow:  1. open the game.  2. click Log at the"
+            " bottom right.  3. click Download at the top of the log panel.  4. drag the file"
+            " it saves onto the box below.\n\n"
+            "Statistics build up across every log you import, so import each game when it"
+            " finishes. Importing the same log twice is safe and changes nothing."
         ))
 
         card = Panel("Import hand histories")

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import os
-import sys
 from pathlib import Path
 
 import pytest
@@ -11,21 +9,9 @@ from pokernow_tracker.ingest import import_log
 
 pytest.importorskip("PySide6", reason="the desktop interface is an optional extra")
 
-from PySide6.QtWidgets import QApplication  # noqa: E402
-
 from pokernow_tracker.ranges import ACTIONS, ANY_POSITION, TableAverages  # noqa: E402
 from pokernow_tracker.ui import theme, views  # noqa: E402
 from pokernow_tracker.ui.grid import RangeGrid  # noqa: E402
-
-
-@pytest.fixture(scope="module")
-def app():
-    # Qt needs a display; fall back to its offscreen backend so the suite runs
-    # on a build server as well as a desktop.
-    if not os.environ.get("DISPLAY") and sys.platform.startswith("linux"):
-        os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-    existing = QApplication.instance()
-    yield existing or QApplication([])
 
 
 @pytest.fixture

@@ -1,0 +1,100 @@
+name: Build downloads
+
+# Tagging a version builds the applications people actually download, so a
+# release never depends on somebody having a working build machine to hand.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: Windows
+            artifact: PokerNow-Tracker-Windows
+          - os: macos-latest
+            label: macOS (Apple silicon)
+            artifact: PokerNow-Tracker-macOS-AppleSilicon
+          - os: macos-13
+            label: macOS (Intel)
+            artifact: PokerNow-Tracker-macOS-Intel
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build dependencies
+        run: python -m pip install --upgrade pip pyinstaller "PySide6>=6.5"
+
+      - name: Run the test suite
+        run: |
+          python -m pip install pytest
+          python -m pytest -q
+        env:
+          QT_QPA_PLATFORM: offscreen
+
+      - name: Build
+        run: python packaging/build.py
+
+      - name: Name the macOS build for its architecture
+        if: runner.os == 'macOS'
+        run: |
+          mv "dist/PokerNow Tracker-macOS.zip" "dist/${{ matrix.artifact }}.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            dist/*.exe
+            dist/*.zip
+          if-no-files-found: error
+
+  publish:
+    name: Publish the release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: downloads
+          merge-multiple: true
+
+      - name: List what will be published
+        run: ls -lh downloads
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: downloads/*
+          draft: false
+          generate_release_notes: true
+          body: |
+            ## Download
+
+            | Your computer | File |
+            | --- | --- |
+            | Windows | **PokerNow Tracker.exe** |
+            | Mac with Apple silicon (M1 and later) | **PokerNow-Tracker-macOS-AppleSilicon.zip** |
+            | Mac with an Intel processor | **PokerNow-Tracker-macOS-Intel.zip** |
+
+            Download the file for your computer and open it. Nothing else is
+            needed, and nothing else gets installed.
+
+            The first time you open it, your computer will warn you that the
+            app is from an unidentified developer. That warning appears for
+            every application that has not been through a paid signing
+            programme. On Windows choose **More info** and then **Run anyway**.
+            On a Mac, right-click the app and choose **Open**, then **Open**
+            again.

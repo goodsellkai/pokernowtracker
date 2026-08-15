@@ -25,6 +25,18 @@ def _files_from(argv: Optional[Sequence[str]]) -> List[Path]:
     return [Path(name) for name in given if Path(name).is_file()]
 
 
+def _close_splash() -> None:
+    """Dismiss the packaged build's startup panel once there is a window."""
+    try:
+        import pyi_splash  # injected only into a packaged build
+    except ImportError:
+        return
+    try:
+        pyi_splash.close()
+    except Exception:  # the panel is cosmetic, never a reason to fail startup
+        pass
+
+
 def run(argv: Optional[Sequence[str]] = None) -> int:
     app = QApplication(sys.argv[:1])
     app.setApplicationName("PokerNow Tracker")
@@ -33,6 +45,7 @@ def run(argv: Optional[Sequence[str]] = None) -> int:
 
     window = MainWindow(Store())
     window.show()
+    _close_splash()
 
     files = _files_from(argv)
     if files:

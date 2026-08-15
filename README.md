@@ -8,7 +8,7 @@ Pick a player, a seat, and a preflop action, and every starting hand is shaded b
 
 ## Contents
 
-- [Installation](#installation)
+- [Download](#download)
 - [Getting started](#getting-started)
 - [The application](#the-application)
 - [Statistics](#statistics)
@@ -18,26 +18,33 @@ Pick a player, a seat, and a preflop action, and every starting hand is shaded b
 - [Development](#development)
 - [License](#license)
 
-## Installation
+## Download
 
-Requires Python 3.9 or newer, which ships with macOS and most Linux distributions and is a [free download](https://www.python.org/downloads/) on Windows.
+**[Get the latest version here.](https://github.com/goodsellkai/pokernowtracker/releases/latest)** Pick the file that matches your computer, then open it. There is nothing to install, no Python to set up, and no terminal at any point.
 
-Download this repository, then double-click the launcher for your system:
-
-| System | File |
+| Your computer | File to download |
 | --- | --- |
-| Windows | `PokerNow Tracker.pyw` |
-| macOS and Linux | `PokerNow Tracker.command` |
+| Windows | `PokerNow Tracker.exe` |
+| Mac with Apple silicon (M1 and later) | `PokerNow-Tracker-macOS-AppleSilicon.zip` |
+| Mac with an Intel processor | `PokerNow-Tracker-macOS-Intel.zip` |
 
-The first launch offers to fetch the interface toolkit and shows its progress in a small window. Nothing else is needed, and no terminal is involved at any point.
+On a Mac, double-click the downloaded `.zip` to unpack it, then drag `PokerNow Tracker` into your Applications folder.
 
-If you would rather install it as a package, `pip install .` provides a `pokernow` command, and `python -m pokernow_tracker` runs it from a source checkout.
+### The first time you open it
+
+Your computer will warn you that the application comes from an unidentified developer. That warning appears for anything not signed through a paid developer programme, and it is not a sign that something is wrong.
+
+- **Windows** shows a blue "Windows protected your PC" box. Click **More info**, then **Run anyway**.
+- **macOS** says the app "cannot be opened because the developer cannot be verified". Right-click (or Control-click) the app, choose **Open**, then **Open** again in the box that follows. You only have to do this once.
 
 ## Getting started
 
-1. In PokerNow, open the game's **Log** panel and download the hand-history CSV.
-2. Launch the application and drop the file onto the **Import** tab.
-3. Open **Players** to see everyone at your table, or **Range Finder** to ask what somebody is holding.
+1. In PokerNow, open the game and click **Log** at the bottom right.
+2. Click **Download** at the top of the log panel. Your browser saves a `.csv` file.
+3. Drag that file onto the **Import** tab.
+4. Open **Players** to see everyone at your table, or **Range Finder** to ask what somebody is holding.
+
+Import each game when it finishes, and the reads keep sharpening.
 
 Statistics accumulate across every log you import. Players are matched by their PokerNow account id, so a changed nickname carries over, and players whose names differ only in case or spacing are merged automatically. Re-importing a log you have already processed is safe, because hands are deduplicated by hand id. Importing a longer export of a game you already have replaces the shorter one.
 
@@ -120,10 +127,21 @@ Hand-history exports contain the display names of everyone at the table. The inc
 
 ## Development
 
+Running from a source checkout needs Python 3.9 or newer. Double-clicking `PokerNow Tracker.pyw` on Windows or `PokerNow Tracker.command` elsewhere starts it, offering to install the interface toolkit on first run. `pip install .` provides a `pokernow` command instead, and `python -m pokernow_tracker` runs it in place.
+
 ```bash
 pip install -e . pytest
 pytest
 ```
+
+Building the downloadable applications takes one command, and produces a build for whichever system runs it:
+
+```bash
+pip install pyinstaller
+python packaging/build.py
+```
+
+Pushing a `v*` tag runs the same build on Windows, Apple silicon, and Intel macOS runners and publishes the results to a GitHub release. The icon is drawn from `packaging/icon.py` rather than checked in, so it stays in step with the interface palette.
 
 | Module | Responsibility |
 | --- | --- |
@@ -134,6 +152,7 @@ pytest
 | `ranges.py` | The range model |
 | `store.py` | Persistence and the log archive |
 | `ui/` | The interface |
+| `packaging/` | The icon, the PyInstaller build, and its entry point |
 
 The analysis engine knows nothing about the interface, and is exercised independently by the tests.
 

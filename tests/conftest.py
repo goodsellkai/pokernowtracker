@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import csv
 import io
+import os
+import sys
 from dataclasses import dataclass, field
 from typing import List, Optional, Sequence
 
@@ -129,3 +131,22 @@ def store(tmp_path):
     from pokernow_tracker.store import Store
 
     return Store(tmp_path / "data")
+
+
+@pytest.fixture(scope="session")
+def app():
+    """One Qt application for the whole run.
+
+    Qt tolerates exactly one application object per process, and creating a
+    second one leaves the interpreter to crash on the way out, so every test
+    that needs Qt shares this.
+    """
+    pytest.importorskip("PySide6", reason="the desktop interface is an optional extra")
+    from PySide6.QtWidgets import QApplication
+
+    # Qt needs a display; fall back to its offscreen backend so the suite runs
+    # on a build server as well as a desktop.
+    if not os.environ.get("DISPLAY") and sys.platform.startswith("linux"):
+        os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    existing = QApplication.instance()
+    yield existing or QApplication(sys.argv[:1])
