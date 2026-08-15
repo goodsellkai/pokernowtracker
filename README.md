@@ -30,13 +30,6 @@ Pick a player, a seat, and a preflop action, and every starting hand is shaded b
 
 On a Mac, double-click the downloaded `.zip` to unpack it, then drag `PokerNow Tracker` into your Applications folder.
 
-### The first time you open it
-
-Your computer will warn you that the application comes from an unidentified developer. That warning appears for anything not signed through a paid developer programme, and it is not a sign that something is wrong.
-
-- **Windows** shows a blue "Windows protected your PC" box. Click **More info**, then **Run anyway**.
-- **macOS** says the app "cannot be opened because the developer cannot be verified". Right-click (or Control-click) the app, choose **Open**, then **Open** again in the box that follows. You only have to do this once.
-
 ## Getting started
 
 1. In PokerNow, open the game and click **Log** at the bottom right.
