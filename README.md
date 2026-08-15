@@ -24,7 +24,7 @@ Pick a player, a seat, and a preflop action, and every starting hand is shaded b
 
 | Your computer | File to download |
 | --- | --- |
-| Windows | `PokerNow Tracker.exe` |
+| Windows | `PokerNowTracker.exe` |
 | Mac with Apple silicon (M1 and later) | `PokerNow-Tracker-macOS-AppleSilicon.zip` |
 | Mac with an Intel processor | `PokerNow-Tracker-macOS-Intel.zip` |
 

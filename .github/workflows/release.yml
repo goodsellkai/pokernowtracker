@@ -56,6 +56,12 @@ jobs:
         run: |
           mv "dist/PokerNow Tracker-macOS.zip" "dist/${{ matrix.artifact }}.zip"
 
+      # A release asset cannot contain spaces; GitHub turns them into dots,
+      # which would leave the download named PokerNow.Tracker.exe.
+      - name: Name the Windows build for the download page
+        if: runner.os == 'Windows'
+        run: mv "dist/PokerNow Tracker.exe" "dist/PokerNowTracker.exe"
+
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
@@ -88,7 +94,7 @@ jobs:
 
             | Your computer | File |
             | --- | --- |
-            | Windows | **PokerNow Tracker.exe** |
+            | Windows | **PokerNowTracker.exe** |
             | Mac with Apple silicon (M1 and later) | **PokerNow-Tracker-macOS-AppleSilicon.zip** |
             | Mac with an Intel processor | **PokerNow-Tracker-macOS-Intel.zip** |
 
