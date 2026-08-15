@@ -42,7 +42,7 @@ class RangeGrid(QWidget):
         self._layout = grid_hands()
         self._hover: Optional[str] = None
         self.setMouseTracking(True)
-        self.setMinimumSize(420, 420)
+        self.setMinimumSize(370, 370)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     def set_cells(self, cells: Sequence[Cell]) -> None:
@@ -96,11 +96,18 @@ class RangeGrid(QWidget):
     def paintEvent(self, event) -> None:
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing, False)
-        painter.fillRect(self.rect(), theme.GRID_BACKGROUND)
 
         left, top, step = self._metrics()
         if step <= 0:
             return
+
+        # The backdrop covers the square and its rank labels only. Filling the
+        # whole widget would leave a wide dark band beside the grid whenever
+        # the space available is wider than it is tall.
+        side = step * 13
+        painter.fillRect(
+            QRectF(left - top, 0, side + top, side + top), theme.GRID_BACKGROUND
+        )
 
         label_font = QFont(self.font())
         label_font.setPointSizeF(max(6.0, min(9.5, step * 0.30)))

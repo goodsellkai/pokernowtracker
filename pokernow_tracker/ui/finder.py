@@ -47,14 +47,14 @@ class RangePanel(QWidget):
         if compact:
             outer = QVBoxLayout(self)
             outer.setContentsMargins(0, 0, 0, 0)
-            outer.setSpacing(12)
+            outer.setSpacing(theme.STEP)
             outer.addWidget(controls)
             outer.addWidget(display, 1)
         else:
             controls.setFixedWidth(RAIL_WIDTH)
             outer = QHBoxLayout(self)
             outer.setContentsMargins(0, 0, 0, 0)
-            outer.setSpacing(22)
+            outer.setSpacing(theme.ROOMY)
             outer.addWidget(controls)
             outer.addWidget(display, 1)
 
@@ -62,7 +62,7 @@ class RangePanel(QWidget):
         controls = QWidget()
         column = QVBoxLayout(controls)
         column.setContentsMargins(0, 0, 0, 0)
-        column.setSpacing(12)
+        column.setSpacing(theme.GAP if compact else theme.STEP)
 
         wrap = 0 if compact else RAIL_WIDTH
         self._views = Segmented(
@@ -81,7 +81,7 @@ class RangePanel(QWidget):
         self._action_block = QWidget()
         actions = QVBoxLayout(self._action_block)
         actions.setContentsMargins(0, 0, 0, 0)
-        actions.setSpacing(8)
+        actions.setSpacing(theme.SNUG if compact else theme.GAP)
         actions.addWidget(Rule())
 
         self._action_rows: List[Segmented] = []
@@ -97,10 +97,10 @@ class RangePanel(QWidget):
         self._size_block = QWidget()
         size_column = QVBoxLayout(self._size_block)
         size_column.setContentsMargins(0, 0, 0, 0)
-        size_column.setSpacing(4)
+        size_column.setSpacing(theme.TIGHT + 2)
         size_column.addWidget(faint("Raise size"))
         size_row = QHBoxLayout()
-        size_row.setSpacing(8)
+        size_row.setSpacing(theme.SNUG)
         self._size = QDoubleSpinBox()
         self._size.setRange(0.0, 500.0)
         self._size.setSingleStep(0.5)
@@ -119,7 +119,7 @@ class RangePanel(QWidget):
         self._slider_block = QWidget()
         sliders = QVBoxLayout(self._slider_block)
         sliders.setContentsMargins(0, 0, 0, 0)
-        sliders.setSpacing(6)
+        sliders.setSpacing(theme.SNUG)
         sliders.addWidget(Rule())
         sliders.addWidget(faint("Adjust the cutoffs"))
         self._vpip_slider, self._vpip_value = self._make_slider("Entered", sliders)
@@ -133,9 +133,12 @@ class RangePanel(QWidget):
         display = QWidget()
         column = QVBoxLayout(display)
         column.setContentsMargins(0, 0, 0, 0)
-        column.setSpacing(10)
+        column.setSpacing(theme.GAP)
 
         self._grid = RangeGrid()
+        # The grid paints a square of whichever side is shorter, so height past
+        # this point is dead space that would push the caption out of view.
+        self._grid.setMaximumHeight(760)
         column.addWidget(self._grid, 1)
 
         self._legend = Legend()
@@ -145,11 +148,12 @@ class RangePanel(QWidget):
         self._caption.setMinimumHeight(46)
         self._caption.setAlignment(Qt.AlignTop)
         column.addWidget(self._caption)
+        column.addStretch(1)
         return display
 
     def _make_slider(self, label: str, parent_layout) -> tuple[QSlider, QLabel]:
         row = QHBoxLayout()
-        row.setSpacing(8)
+        row.setSpacing(theme.SNUG)
         caption = QLabel(label)
         caption.setObjectName("Faint")
         caption.setFixedWidth(52)
@@ -273,12 +277,12 @@ class RangeFinderTab(QWidget):
         self._players: List[Player] = []
 
         column = QVBoxLayout(self)
-        column.setContentsMargins(18, 16, 18, 16)
-        column.setSpacing(12)
+        column.setContentsMargins(*theme.PAGE_MARGIN)
+        column.setSpacing(theme.STEP)
 
         panel = Panel()
         header = QHBoxLayout()
-        header.setSpacing(12)
+        header.setSpacing(theme.STEP)
         self._picker = QComboBox()
         self._picker.setMinimumWidth(230)
         self._picker.currentIndexChanged.connect(self._on_pick)
@@ -291,7 +295,16 @@ class RangeFinderTab(QWidget):
 
         self._panel = RangePanel()
         panel.add(self._panel)
-        column.addWidget(panel, 1)
+
+        # The full action tree beside a square grid is the tallest thing in the
+        # application. Scrolling keeps the window usable on a short laptop
+        # display instead of forcing a minimum height taller than the screen.
+        scroller = QScrollArea()
+        scroller.setWidgetResizable(True)
+        scroller.setFrameShape(QScrollArea.NoFrame)
+        scroller.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroller.setWidget(panel)
+        column.addWidget(scroller, 1)
 
         self._empty = muted("No players yet. Import a hand history from the Import tab.")
         column.addWidget(self._empty)

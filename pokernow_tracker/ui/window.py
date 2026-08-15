@@ -19,6 +19,7 @@ from .detail import PlayerDetail
 from .finder import RangeFinderTab
 from .importer import ImportTab
 from .players import PlayersTab
+from .widgets import fit_to_screen
 
 
 class MainWindow(QMainWindow):
@@ -28,7 +29,7 @@ class MainWindow(QMainWindow):
         self._windows: List[PlayerDetail] = []
 
         self.setWindowTitle("PokerNow Tracker")
-        self.resize(1180, 820)
+        fit_to_screen(self, 1280, 900)
 
         root = QWidget()
         column = QVBoxLayout(root)
@@ -67,8 +68,8 @@ class MainWindow(QMainWindow):
         header = QWidget()
         header.setObjectName("Header")
         row = QHBoxLayout(header)
-        row.setContentsMargins(16, 0, 12, 0)
-        row.setSpacing(9)
+        row.setContentsMargins(theme.WIDE, 0, theme.STEP, 0)
+        row.setSpacing(theme.GAP)
 
         suit = QLabel("♠")
         suit.setObjectName("WordmarkSuit")
@@ -89,7 +90,7 @@ class MainWindow(QMainWindow):
         reload_button.setToolTip("Re-read saved data from disk and redraw")
         reload_button.clicked.connect(self._reload_from_disk)
         row.addWidget(reload_button)
-        header.setFixedHeight(42)
+        header.setFixedHeight(50)
         return header
 
     # --------------------------------------------------------------- events

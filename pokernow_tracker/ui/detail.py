@@ -18,8 +18,8 @@ from ..store import POSITIONS, Player, Store
 from . import theme
 from .finder import RangePanel
 from .widgets import (
-    Panel, Rule, Tag, faint, format_factor, format_money, format_percent,
-    heading, muted, subheading,
+    Panel, Rule, Tag, faint, fit_to_screen, format_factor, format_money,
+    format_percent, heading, muted, subheading,
 )
 
 TAGS = ["", "Nit", "Rock", "TAG", "LAG", "Reg", "Fish", "Station", "Maniac", "Whale"]
@@ -38,16 +38,16 @@ class PlayerDetail(QDialog):
 
         self.setWindowTitle(player.name)
         self.setModal(False)
-        self.resize(1080, 760)
+        fit_to_screen(self, 1080, 940)
 
         outer = QVBoxLayout(self)
-        outer.setContentsMargins(18, 16, 18, 16)
-        outer.setSpacing(12)
+        outer.setContentsMargins(*theme.PAGE_MARGIN)
+        outer.setSpacing(theme.STEP)
 
         outer.addLayout(self._build_header())
 
         body = QHBoxLayout()
-        body.setSpacing(20)
+        body.setSpacing(theme.ROOMY)
         body.addWidget(self._build_left(), 1)
         body.addWidget(self._build_right(), 1)
         outer.addLayout(body, 1)
@@ -59,7 +59,7 @@ class PlayerDetail(QDialog):
 
     def _build_header(self) -> QHBoxLayout:
         row = QHBoxLayout()
-        row.setSpacing(10)
+        row.setSpacing(theme.GAP)
 
         name = QLabel(self._player.name)
         name.setStyleSheet("font-size:20px;font-weight:700;")
@@ -87,8 +87,8 @@ class PlayerDetail(QDialog):
         scroll.setWidgetResizable(True)
         panel = QWidget()
         column = QVBoxLayout(panel)
-        column.setContentsMargins(0, 0, 8, 0)
-        column.setSpacing(10)
+        column.setContentsMargins(0, 0, theme.GAP, 0)
+        column.setSpacing(theme.STEP)
 
         column.addWidget(subheading("Statistics"))
         column.addWidget(muted("▲ notably higher, ▼ notably lower than this table's average."))
@@ -121,7 +121,7 @@ class PlayerDetail(QDialog):
         self._notes = QTextEdit()
         self._notes.setPlaceholderText("Tells, tendencies, bet sizing")
         self._notes.setPlainText(self._player.note)
-        self._notes.setFixedHeight(90)
+        self._notes.setFixedHeight(84)
         self._notes.textChanged.connect(self._on_note)
         column.addWidget(self._notes)
 
@@ -133,16 +133,25 @@ class PlayerDetail(QDialog):
         panel = QWidget()
         column = QVBoxLayout(panel)
         column.setContentsMargins(0, 0, 0, 0)
-        column.setSpacing(8)
+        column.setSpacing(theme.GAP)
         column.addWidget(subheading("Preflop range"))
         self._panel = RangePanel(compact=True)
         self._panel.set_player(self._player, TableAverages(list(self._store.players.values())))
-        column.addWidget(self._panel, 1)
+
+        # Stacked above the grid, the action tree makes this the tallest column
+        # in the dialog. It scrolls, as the statistics beside it already do, so
+        # the dialog never opens taller than the screen it is on.
+        scroller = QScrollArea()
+        scroller.setWidgetResizable(True)
+        scroller.setFrameShape(QScrollArea.NoFrame)
+        scroller.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroller.setWidget(self._panel)
+        column.addWidget(scroller, 1)
         return panel
 
     def _build_footer(self) -> QHBoxLayout:
         row = QHBoxLayout()
-        row.setSpacing(8)
+        row.setSpacing(theme.SNUG)
         row.addWidget(muted("Merge into", wrap=False))
 
         self._merge_target = QComboBox()
@@ -166,7 +175,7 @@ class PlayerDetail(QDialog):
     def _make_table(self, columns: int) -> QTableWidget:
         table = QTableWidget(0, columns)
         table.setObjectName("Compact")
-        table.verticalHeader().setDefaultSectionSize(24)
+        table.verticalHeader().setDefaultSectionSize(theme.ROW_HEIGHT_COMPACT)
         table.verticalHeader().setVisible(False)
         table.horizontalHeader().setVisible(False)
         table.setSelectionMode(QTableWidget.NoSelection)

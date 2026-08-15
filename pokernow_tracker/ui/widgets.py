@@ -6,6 +6,7 @@ import math
 from typing import Optional, Sequence, Tuple
 
 from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import (
     QButtonGroup, QFrame, QHBoxLayout, QLabel, QPushButton, QSizePolicy,
     QVBoxLayout, QWidget,
@@ -34,6 +35,26 @@ def _wrap(buttons: Sequence[QPushButton], available: int, spacing: int = 4) -> l
     return rows
 
 
+def fit_to_screen(window: QWidget, width: int, height: int) -> None:
+    """Size a window to the space the display actually has.
+
+    Extra padding pushes a layout's minimum height up, and a window taller
+    than the screen puts its own controls out of reach, which no amount of
+    spacing makes up for.
+    """
+    screen = window.screen() or QGuiApplication.primaryScreen()
+    if screen is None:  # pragma: no cover - a display is always present in use
+        window.resize(width, height)
+        return
+
+    available = screen.availableGeometry()
+    window.resize(
+        min(width, int(available.width() * 0.94)),
+        min(height, int(available.height() * 0.94)),
+    )
+    window.setMaximumHeight(available.height())
+
+
 class Panel(QFrame):
     """A titled surface."""
 
@@ -41,8 +62,8 @@ class Panel(QFrame):
         super().__init__(parent)
         self.setObjectName("Panel")
         self._layout = QVBoxLayout(self)
-        self._layout.setContentsMargins(14, 12, 14, 12)
-        self._layout.setSpacing(10)
+        self._layout.setContentsMargins(*theme.PANEL_PADDING)
+        self._layout.setSpacing(theme.GAP)
         if title:
             self._layout.addWidget(heading(title))
 
@@ -75,7 +96,7 @@ class Segmented(QWidget):
         super().__init__(parent)
         outer = QVBoxLayout(self) if vertical else QHBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
-        outer.setSpacing(6 if vertical else 4)
+        outer.setSpacing(theme.SNUG if vertical else theme.TIGHT + 2)
 
         if label:
             caption = QLabel(label)
@@ -102,11 +123,11 @@ class Segmented(QWidget):
         rows = _wrap(buttons, wrap_width) if wrap_width else [buttons]
         stack = QVBoxLayout()
         stack.setContentsMargins(0, 0, 0, 0)
-        stack.setSpacing(4)
+        stack.setSpacing(theme.TIGHT + 1)
         for line in rows:
             row = QHBoxLayout()
             row.setContentsMargins(0, 0, 0, 0)
-            row.setSpacing(4)
+            row.setSpacing(theme.TIGHT + 1)
             for button in line:
                 row.addWidget(button)
             row.addStretch(1)
@@ -139,7 +160,7 @@ class Tag(QLabel):
         super().__init__(text, parent)
         self.setStyleSheet(
             f"color:{colour};border:1px solid {colour};border-radius:2px;"
-            "padding:0px 6px;font-size:11px;"
+            "padding:2px 8px;font-size:11px;"
         )
         self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
 
@@ -163,6 +184,7 @@ class Metric(QWidget):
 
         head = QLabel(caption)
         head.setStyleSheet(f"color:{theme.TEXT_FAINT};font-size:11px;")
+        head.setContentsMargins(0, 0, 0, 2)
         column.addWidget(head)
 
         marker, text_colour = "", colour or theme.TEXT

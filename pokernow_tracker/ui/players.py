@@ -61,8 +61,8 @@ class PlayersTab(QWidget):
         self._rows: List[Player] = []
 
         column = QVBoxLayout(self)
-        column.setContentsMargins(18, 16, 18, 16)
-        column.setSpacing(12)
+        column.setContentsMargins(*theme.PAGE_MARGIN)
+        column.setSpacing(theme.STEP)
 
         self._banner = notice("", warning=True)
         self._banner.hide()
@@ -70,7 +70,7 @@ class PlayersTab(QWidget):
 
         panel = Panel()
         header = QHBoxLayout()
-        header.setSpacing(10)
+        header.setSpacing(theme.GAP)
         self._title = heading("Players")
         header.addWidget(self._title)
         self._hint = faint("Select a player for their full record and range.", wrap=False)
@@ -78,7 +78,7 @@ class PlayersTab(QWidget):
         header.addStretch(1)
         search = QLineEdit()
         search.setPlaceholderText("Filter by name")
-        search.setFixedWidth(180)
+        search.setFixedWidth(210)
         search.textChanged.connect(self._on_search)
         header.addWidget(search)
         panel.add_layout(header)
@@ -90,6 +90,8 @@ class PlayersTab(QWidget):
         self._table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self._table.setSelectionMode(QAbstractItemView.SingleSelection)
         self._table.setShowGrid(False)
+        self._table.verticalHeader().setDefaultSectionSize(theme.ROW_HEIGHT)
+        self._table.horizontalHeader().setFixedHeight(theme.HEADER_HEIGHT)
         self._table.setAlternatingRowColors(False)
         self._table.setCursor(Qt.PointingHandCursor)
         self._table.cellDoubleClicked.connect(self._on_activate)
@@ -97,6 +99,10 @@ class PlayersTab(QWidget):
 
         header_view = self._table.horizontalHeader()
         header_view.setSectionResizeMode(0, QHeaderView.Stretch)
+        # Names are the one column that must never be elided; the statistics
+        # beside it size to their contents and would otherwise crowd it out.
+        header_view.setMinimumSectionSize(64)
+        self._table.setColumnWidth(0, 170)
         header_view.setSectionResizeMode(1, QHeaderView.ResizeToContents)
         for index in range(2, len(COLUMNS)):
             header_view.setSectionResizeMode(index, QHeaderView.ResizeToContents)

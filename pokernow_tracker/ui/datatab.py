@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
 
 from ..ingest import rebuild
 from ..store import Store, remember_data_dir
+from . import theme
 from .widgets import Panel, Rule, faint, muted, notice
 
 
@@ -28,8 +29,8 @@ class DataTab(QWidget):
         self._store = store
 
         column = QVBoxLayout(self)
-        column.setContentsMargins(16, 14, 16, 14)
-        column.setSpacing(12)
+        column.setContentsMargins(*theme.PAGE_MARGIN)
+        column.setSpacing(theme.STEP)
 
         storage = Panel("Storage")
         self._location = muted("")
@@ -38,7 +39,7 @@ class DataTab(QWidget):
         storage.add(self._counts)
 
         buttons = QHBoxLayout()
-        buttons.setSpacing(8)
+        buttons.setSpacing(theme.SNUG)
         move = QPushButton("Change folder")
         move.setToolTip("Keep tracked data somewhere else")
         move.clicked.connect(self._relocate)
@@ -65,7 +66,7 @@ class DataTab(QWidget):
         archive.add(self._archive_summary)
 
         archive_buttons = QHBoxLayout()
-        archive_buttons.setSpacing(8)
+        archive_buttons.setSpacing(theme.SNUG)
         rebuild_button = QPushButton("Rebuild from archived logs")
         rebuild_button.clicked.connect(self._rebuild)
         archive_buttons.addWidget(rebuild_button)
@@ -85,6 +86,8 @@ class DataTab(QWidget):
         self._sessions.setSelectionMode(QTableWidget.NoSelection)
         self._sessions.setAlternatingRowColors(True)
         self._sessions.setShowGrid(False)
+        self._sessions.verticalHeader().setDefaultSectionSize(theme.ROW_HEIGHT)
+        self._sessions.horizontalHeader().setFixedHeight(theme.HEADER_HEIGHT)
         header = self._sessions.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.ResizeToContents)

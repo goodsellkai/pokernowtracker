@@ -27,7 +27,10 @@ class DropZone(QLabel):
         super().__init__(parent)
         self.setObjectName("DropTarget")
         self.setAlignment(Qt.AlignCenter)
-        self.setMinimumHeight(150)
+        self.setMinimumHeight(160)
+        # Capped, because a target stretched over the whole tab stops reading
+        # as something to drop onto and starts reading as empty space.
+        self.setMaximumHeight(260)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setCursor(Qt.PointingHandCursor)
         self.setAcceptDrops(True)
@@ -78,8 +81,8 @@ class ImportTab(QWidget):
         self._store = store
 
         column = QVBoxLayout(self)
-        column.setContentsMargins(18, 16, 18, 16)
-        column.setSpacing(12)
+        column.setContentsMargins(*theme.PAGE_MARGIN)
+        column.setSpacing(theme.STEP)
 
         column.addWidget(notice(
             "To get a hand history out of PokerNow:  1. open the game.  2. click Log at the"
@@ -92,8 +95,7 @@ class ImportTab(QWidget):
         card = Panel("Import hand histories")
         zone = DropZone()
         zone.files_dropped.connect(self._import)
-        # The drop target takes the spare room; everything else stays put.
-        card.body().addWidget(zone, 1)
+        card.add(zone)
 
         self._summary = muted("")
         self._summary.hide()
@@ -107,11 +109,16 @@ class ImportTab(QWidget):
         self._results.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self._results.setAlternatingRowColors(True)
         self._results.setShowGrid(False)
+        self._results.verticalHeader().setDefaultSectionSize(theme.ROW_HEIGHT)
+        self._results.horizontalHeader().setFixedHeight(theme.HEADER_HEIGHT)
         self._results.hide()
         self._results.setMaximumHeight(320)
         card.add(self._results)
 
-        column.addWidget(card, 1)
+        # The panel sizes to its contents and the spare room falls below it,
+        # rather than the panel stretching into a mostly empty rectangle.
+        column.addWidget(card)
+        column.addStretch(1)
 
     def set_store(self, store: Store) -> None:
         self._store = store

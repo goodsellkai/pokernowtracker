@@ -139,3 +139,44 @@ def test_remembered_folder_is_used_next_time(tmp_path, monkeypatch):
 
     store_module.remember_data_dir(None)
     assert store_module.default_data_dir() == Path.home() / ".pokernow-tracker"
+
+
+def test_every_gap_comes_from_the_spacing_scale():
+    """Spacing is a small fixed scale, not a value chosen per widget."""
+    import re
+
+    from pokernow_tracker.ui import theme
+
+    scale = {theme.TIGHT, theme.SNUG, theme.GAP, theme.STEP, theme.WIDE, theme.ROOMY}
+    # A couple of half-steps are deliberate: a control's own parts sit closer
+    # together than the controls themselves do.
+    allowed = scale | {theme.TIGHT + 1, theme.TIGHT + 2, 0}
+
+    root = Path(__file__).resolve().parent.parent / "pokernow_tracker" / "ui"
+    offenders = []
+    for path in root.glob("*.py"):
+        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            found = re.search(r"\.setSpacing\((\d+)\)", line)
+            if found and int(found.group(1)) not in allowed:
+                offenders.append(f"{path.name}:{number} {line.strip()}")
+    assert not offenders, "spacing outside the scale: " + "; ".join(offenders)
+
+
+def test_the_main_window_fits_on_a_small_display(app, populated):
+    from pokernow_tracker.ui.window import MainWindow
+
+    window = MainWindow(populated)
+    # A 1366x768 laptop is the floor worth supporting. The tall Range Finder
+    # scrolls rather than forcing a window bigger than the screen.
+    assert window.minimumSizeHint().height() <= 700
+    assert window.minimumSizeHint().width() <= 1300
+    window.close()
+
+
+def test_a_player_window_fits_on_a_small_display(app, populated):
+    from pokernow_tracker.ui.detail import PlayerDetail
+
+    player = next(iter(populated.players.values()))
+    detail = PlayerDetail(player, populated)
+    assert detail.minimumSizeHint().height() <= 700
+    detail.close()

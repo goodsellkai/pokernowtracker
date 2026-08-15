@@ -76,6 +76,29 @@ ACTION_HUE = {
 EMPTY_CELL = QColor(28, 33, 41)
 GRID_BACKGROUND = QColor(14, 17, 22)
 
+# Spacing scale ------------------------------------------------------------
+#
+# Every margin and gap in the interface comes from this scale. Spacing chosen
+# per widget drifts into a dozen near-identical values that read as accidental,
+# whereas a small fixed set gives the layout a rhythm the eye can follow.
+TIGHT = 4      # between items that belong to one control
+SNUG = 8       # between related controls
+GAP = 12       # between rows within a panel
+STEP = 16      # between a panel's edge and a page's edge
+WIDE = 24      # between panels, and around a page
+ROOMY = 32     # between major columns
+
+#: Padding inside a panel: generous at the sides, a little less top and bottom.
+PANEL_PADDING = (18, 16, 18, 16)
+#: Margin around the content of a tab.
+PAGE_MARGIN = (WIDE, STEP + 2, WIDE, STEP + 2)
+
+#: Table geometry. Rows need enough height that figures do not feel crammed
+#: against their neighbours, which matters most in the wide players table.
+ROW_HEIGHT = 32
+ROW_HEIGHT_COMPACT = 26
+HEADER_HEIGHT = 34
+
 STYLE_COLOUR = {
     "Nit": "#5e93b8",
     "Rock": "#5e93b8",
@@ -126,32 +149,32 @@ QTabWidget::pane {{ border: none; background: {BACKGROUND}; }}
 QTabBar {{ background: {SURFACE}; }}
 QTabBar::tab {{
     background: transparent; color: {TEXT_MUTED};
-    padding: 9px 18px; margin: 0; border: none;
+    padding: 11px 22px; margin: 0; border: none;
     border-bottom: 2px solid transparent;
 }}
 QTabBar::tab:hover {{ color: {TEXT}; }}
 QTabBar::tab:selected {{ color: {TEXT}; border-bottom: 2px solid {ACCENT}; }}
 
 /* Surfaces -------------------------------------------------------------- */
-#Panel {{ background: {SURFACE}; border: 1px solid {LINE_SOFT}; border-radius: 3px; }}
-#Inset {{ background: {BACKGROUND}; border: 1px solid {LINE_SOFT}; border-radius: 3px; }}
+#Panel {{ background: {SURFACE}; border: 1px solid {LINE_SOFT}; border-radius: 5px; }}
+#Inset {{ background: {BACKGROUND}; border: 1px solid {LINE_SOFT}; border-radius: 5px; }}
 #Heading {{ color: {TEXT}; font-size: 13px; font-weight: 600; }}
 #Subheading {{ color: {TEXT_MUTED}; font-size: 12px; font-weight: 600; }}
 #Muted {{ color: {TEXT_MUTED}; }}
 #Faint {{ color: {TEXT_FAINT}; font-size: 12px; }}
 #Notice {{
     background: {SURFACE}; border-left: 2px solid {ACCENT};
-    color: {TEXT_MUTED}; padding: 9px 12px;
+    color: {TEXT_MUTED}; padding: 12px 15px; line-height: 150%;
 }}
 #NoticeWarning {{
     background: {SURFACE}; border-left: 2px solid {CAUTION};
-    color: {TEXT_MUTED}; padding: 9px 12px;
+    color: {TEXT_MUTED}; padding: 12px 15px; line-height: 150%;
 }}
 
 /* Buttons --------------------------------------------------------------- */
 QPushButton {{
     background: #262c38; border: 1px solid #333b49;
-    border-radius: 3px; color: {TEXT}; padding: 6px 14px;
+    border-radius: 4px; color: {TEXT}; padding: 7px 17px; min-height: 17px;
 }}
 QPushButton:hover {{ background: #2f3644; border-color: #465061; }}
 QPushButton:pressed {{ background: #1b202a; border-color: {LINE}; }}
@@ -165,15 +188,15 @@ QPushButton#Destructive {{ color: {NEGATIVE}; background: #2a1f21; border-color:
 QPushButton#Destructive:hover {{ background: #35262a; border-color: {NEGATIVE}; }}
 QPushButton#Quiet {{
     background: transparent; border: 1px solid transparent; color: {TEXT_MUTED};
-    padding: 4px 10px;
+    padding: 5px 12px;
 }}
 QPushButton#Quiet:hover {{ color: {TEXT}; background: {SURFACE_HIGH}; border-color: {LINE}; }}
 
 /* Segmented selectors --------------------------------------------------- */
 QPushButton#Segment {{
     background: {SURFACE_HIGH}; border: 1px solid {LINE};
-    border-radius: 3px; color: {TEXT_MUTED};
-    padding: 4px 11px; font-size: 12px;
+    border-radius: 4px; color: {TEXT_MUTED};
+    padding: 5px 13px; font-size: 12px;
 }}
 QPushButton#Segment:hover {{ color: {TEXT}; background: #2b3240; border-color: #3c4553; }}
 QPushButton#Segment:checked {{
@@ -183,8 +206,8 @@ QPushButton#Segment:checked:hover {{ background: {ACCENT_HOVER}; border-color: {
 
 /* Inputs ---------------------------------------------------------------- */
 QLineEdit, QComboBox, QDoubleSpinBox, QSpinBox, QTextEdit, QPlainTextEdit {{
-    background: {BACKGROUND}; border: 1px solid {LINE}; border-radius: 3px;
-    color: {TEXT}; padding: 5px 8px;
+    background: {BACKGROUND}; border: 1px solid {LINE}; border-radius: 4px;
+    color: {TEXT}; padding: 7px 10px; min-height: 17px;
     selection-background-color: {ACCENT}; selection-color: {ACCENT_INK};
 }}
 QLineEdit:focus, QComboBox:focus, QDoubleSpinBox:focus, QTextEdit:focus {{
@@ -199,25 +222,25 @@ QComboBox QAbstractItemView {{
 /* Tables ---------------------------------------------------------------- */
 QTableWidget, QTableView {{
     background: {SURFACE}; alternate-background-color: {SURFACE};
-    gridline-color: transparent; border: 1px solid {LINE_SOFT}; border-radius: 3px;
+    gridline-color: transparent; border: 1px solid {LINE_SOFT}; border-radius: 5px;
     selection-background-color: #263043; selection-color: {TEXT};
     outline: none;
 }}
 QHeaderView::section {{
     background: {SURFACE}; color: {TEXT_FAINT}; border: none;
-    border-bottom: 1px solid {LINE}; padding: 6px 8px; font-size: 12px; font-weight: 600;
+    border-bottom: 1px solid {LINE}; padding: 8px 9px; font-size: 12px; font-weight: 600;
 }}
 QHeaderView::section:hover {{ color: {TEXT_MUTED}; }}
-QTableWidget::item {{ padding: 3px 8px; border-bottom: 1px solid {LINE_SOFT}; }}
-QTableWidget#Compact::item {{ padding: 1px 8px; }}
+QTableWidget::item {{ padding: 4px 9px; border-bottom: 1px solid {LINE_SOFT}; }}
+QTableWidget#Compact::item {{ padding: 2px 10px; }}
 QTableWidget::item:selected {{ background: #263043; }}
 
 /* Scrollbars ------------------------------------------------------------ */
 QScrollArea {{ border: none; background: transparent; }}
-QScrollBar:vertical {{ background: transparent; width: 9px; margin: 0; }}
+QScrollBar:vertical {{ background: transparent; width: 11px; margin: 0; }}
 QScrollBar::handle:vertical {{ background: #333c4a; border-radius: 4px; min-height: 28px; }}
 QScrollBar::handle:vertical:hover {{ background: #414b5c; }}
-QScrollBar:horizontal {{ background: transparent; height: 9px; margin: 0; }}
+QScrollBar:horizontal {{ background: transparent; height: 11px; margin: 0; }}
 QScrollBar::handle:horizontal {{ background: #333c4a; border-radius: 4px; min-width: 28px; }}
 QScrollBar::add-line, QScrollBar::sub-line {{ height: 0; width: 0; }}
 QScrollBar::add-page, QScrollBar::sub-page {{ background: transparent; }}
@@ -231,12 +254,14 @@ QSlider::handle:horizontal {{
 }}
 
 QToolTip {{
-    background: #0b0e13; color: {TEXT}; border: 1px solid {LINE}; padding: 5px 7px;
+    background: #0b0e13; color: {TEXT}; border: 1px solid {LINE};
+    border-radius: 4px; padding: 6px 9px;
 }}
 
 #DropTarget {{
     background: {BACKGROUND}; border: 1px dashed #3a4353;
-    border-radius: 3px; color: {TEXT_MUTED};
+    border-radius: 5px; color: {TEXT_MUTED};
+    padding: 24px; line-height: 165%;
 }}
 #DropTarget[active="true"] {{ border-color: {ACCENT}; color: {TEXT}; }}
 
